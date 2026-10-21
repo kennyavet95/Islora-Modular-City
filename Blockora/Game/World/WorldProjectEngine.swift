@@ -13,7 +13,7 @@ struct WorldProjectState: Codable {
 
     static func skybridge() -> WorldProjectState {
         WorldProjectState(
-            name: "Blockora Skybridge",
+            name: "Islora Skybridge",
             flavorText: "A cross-island span every builder is chipping in on.",
             goal: [.goods: 2000, .data: 1500, .energy: 1000],
             contributed: [:],

@@ -1,7 +1,11 @@
-name = "blockora-backend"
+name = "islora-backend"
 main = "src/index.ts"
 compatibility_date = "2024-09-25"
 compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "../site"
+binding = "ASSETS"
 
 # ---------------------------------------------------------------------------
 # D1 — primary relational store (players, cities, contracts, transactions...)
@@ -9,7 +13,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "blockora-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+  database_id = "98f1a9fd-cbba-4df8-8fe3-4fb6568709a3"
 migrations_dir = "migrations"
 
 # ---------------------------------------------------------------------------
@@ -18,8 +22,8 @@ migrations_dir = "migrations"
 # ---------------------------------------------------------------------------
 [[kv_namespaces]]
 binding = "CONFIG"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_KV_PREVIEW_NAMESPACE_ID"
+  id = "8b944917925a44edac6e66543447a8ab"
+  preview_id = "2c91949ac9014700ba026b35cf751713"
 
 # ---------------------------------------------------------------------------
 # Durable Object — single shared coordinator for the cooperative World Project
@@ -34,8 +38,12 @@ tag = "v1"
 new_sqlite_classes = ["WorldProjectRoom"]
 
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
 OFFLINE_PRODUCTION_CAP_SECONDS = "28800" # 8 hours, server-enforced ceiling
+
+[[routes]]
+pattern = "isloramodularcity.online/*"
+zone_id = "5d1be99a35954d81b56a9023df6a7b35"
 
 [observability]
 enabled = true

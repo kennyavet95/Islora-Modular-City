@@ -50,6 +50,8 @@ struct ConstructionView: View {
                 .padding(.top, 8)
         }
         .padding(.bottom, 10)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("construction-tools")
         .alert("Save Blueprint", isPresented: $showSaveBlueprintPrompt) {
             TextField("Name", text: $blueprintName)
             Button("Cancel", role: .cancel) { blueprintName = "" }
@@ -59,6 +61,20 @@ struct ConstructionView: View {
             }
         } message: {
             Text("Store this layout so you can build it again later.")
+        }
+        .alert("Remove Module?", isPresented: Binding(
+            get: { session.pendingModuleRemovalPosition != nil },
+            set: { if !$0 { session.pendingModuleRemovalPosition = nil } }
+        )) {
+            Button("Cancel", role: .cancel) { session.pendingModuleRemovalPosition = nil }
+            Button("Remove Module", role: .destructive) {
+                if let position = session.pendingModuleRemovalPosition {
+                    session.removeModule(buildingID: buildingID, at: position)
+                }
+                session.pendingModuleRemovalPosition = nil
+            }
+        } message: {
+            Text("Removing support can collapse connected modules. This cannot be undone.")
         }
         .alert("Demolish Building?", isPresented: $showDemolishConfirm) {
             Button("Cancel", role: .cancel) {}
@@ -74,7 +90,7 @@ struct ConstructionView: View {
                 Text(building?.displayName ?? "Construction")
                     .font(.headline)
                     .foregroundStyle(.white)
-                Text("Drag a module onto the structure to connect it.")
+                Text("Drag modules to build. Swipe to move; pinch to zoom.")
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.7))
             }
@@ -103,6 +119,7 @@ struct ConstructionView: View {
                 .frame(width: 34, height: 34)
                 .background(.white.opacity(0.14), in: Circle())
         }
+        .accessibilityIdentifier(systemImage)
     }
 
     /// Structural badge plus, when something needs it, the Reinforce action —

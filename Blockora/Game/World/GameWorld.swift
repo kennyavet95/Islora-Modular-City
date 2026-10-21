@@ -17,6 +17,8 @@ struct GameWorld: Codable {
     /// decodes (see `PlayerProfile.dailyBonusStreak` for why this pattern is
     /// used throughout instead of a non-optional default).
     var worldProject: WorldProjectState?
+    var claimedCityGoalIDs: Set<String>?
+    var completedCityOrders: Int?
 
     func building(on plotID: UUID) -> BuildingInstance? {
         guard let plot = plots.first(where: { $0.id == plotID }), let buildingID = plot.buildingID else { return nil }
@@ -48,6 +50,7 @@ struct GameWorld: Codable {
             Worker(name: "Priya", type: .engineer),
             Worker(name: "Sam", type: .electrician),
             Worker(name: "Yuki", type: .technician),
+            Worker(name: "Nia", type: .technician),
         ]
 
         return GameWorld(
@@ -57,7 +60,7 @@ struct GameWorld: Codable {
             buildings: [:],
             workers: starterWorkers,
             contracts: EconomyEngine.starterContracts(),
-            worldEvents: [WorldEventEngine.techBoom(starting: Date())],
+            worldEvents: [WorldEventEngine.harvestFestival(starting: Date())],
             blueprints: [],
             worldProject: .skybridge()
         )

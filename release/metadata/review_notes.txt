@@ -1,0 +1,12 @@
+Islora is a modular island-building game. No account, login or demo credentials are required. Gameplay and saves work locally on the device.
+
+1. On first launch, tap Claim to close the Daily Bonus overlay.
+2. Tap the + on the first unlocked plot. A new player starts with Farm available, so construction opens directly.
+3. Drag a Foundation from its icon in the bottom tray onto the bottom row of the grid.
+4. Drag a Field above the Foundation. Workers complete construction over time; built fields produce Food.
+5. Tap Done to return to the island view. Tap an existing building to edit it.
+6. Open Contracts and claim the First Harvest Journey reward after the Field finishes. The Journey has 19 goals. The rotating board has three City Orders; accept one and Deliver when its required stock is available. A lone Field produces 18 Food/minute before coastal/event bonuses, so the first 100-Food shipment takes under five minutes after construction.
+7. Build a Solar Panel and claim the next Journey goal to reach Level 2 and unlock Processing. Power Plants unlock at Level 3, Data Centers at Level 4, advanced modules at Levels 5–8.
+8. Codex contains synergy discoveries and saved blueprints. Profile shows workers, resources and experience. Project shows local Skybridge contributions. Settings contains the website link, mute control and Reset Game confirmation.
+
+The World Project currently tracks this device's contribution only; it is not shared online. The game interface is in English. No in-app purchases or advertising SDKs are included in this build.

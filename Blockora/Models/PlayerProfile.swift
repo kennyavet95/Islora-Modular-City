@@ -3,6 +3,7 @@ import Foundation
 /// Player-level progression state (§54). Deliberately just two currencies and
 /// an XP counter — the spec explicitly warns against currency sprawl.
 struct PlayerProfile: Codable {
+    static let baseStorageCapacity: ResourceBag = [.food: 300, .energy: 300, .goods: 200, .data: 200]
     var id: UUID
     var displayName: String
     var level: Int
@@ -28,7 +29,7 @@ struct PlayerProfile: Codable {
             level: 1,
             experience: 0,
             resources: [.coins: 500, .food: 0, .energy: 0, .goods: 0, .data: 0, .blocks: 5],
-            storageCapacity: [.food: 300, .energy: 300, .goods: 200, .data: 200],
+            storageCapacity: Self.baseStorageCapacity,
             discoveredSynergyIDs: [],
             lastSyncDate: Date(),
             lastDailyBonusClaimDate: nil,

@@ -76,6 +76,7 @@ final class LocalEconomyService: EconomyService {
             throw EconomyServiceError.contractNotFound
         }
         var world = world
+        guard world.contracts[index].status == .available else { return world }
         world.contracts[index].status = .accepted
         world.contracts[index].acceptedAt = Date()
         return world
@@ -94,7 +95,8 @@ final class LocalEconomyService: EconomyService {
         let progression = ProgressionEngine.applyExperience(result.experience, level: world.player.level, experience: world.player.experience)
         world.player.level = progression.level
         world.player.experience = progression.experience
-        world.contracts[index].status = .completed
+        world.completedCityOrders = (world.completedCityOrders ?? 0) + 1
+        world.contracts[index] = EconomyEngine.replacement(for: contract, index: index, world: world)
         return world
     }
 
@@ -105,7 +107,8 @@ final class LocalEconomyService: EconomyService {
             buildings: Array(world.buildings.values),
             playerLevel: world.player.level,
             elapsedSince: world.player.lastSyncDate,
-            now: now
+            now: now,
+            districts: world.districts, plots: world.plots, events: world.worldEvents
         )
         var world = world
         world.player.resources = result.updatedResources

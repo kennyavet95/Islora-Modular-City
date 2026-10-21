@@ -50,6 +50,10 @@ router.get('/api/v1/health', async () => json({ ok: true }));
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    return router.handle(request, env);
+    const url = new URL(request.url);
+    if (url.pathname.startsWith('/api/')) {
+      return router.handle(request, env);
+    }
+    return env.ASSETS.fetch(request);
   },
 };

@@ -11,9 +11,12 @@ struct OnboardingHintBanner: View {
         HStack(spacing: 10) {
             Image(systemName: step.iconName)
                 .font(.subheadline.weight(.bold))
-            Text(step.message)
-                .font(.caption.weight(.semibold))
-                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Mara · Your builder").font(.caption2.weight(.heavy)).foregroundStyle(.white.opacity(0.8))
+                Text(step.message)
+                    .font(.caption.weight(.semibold))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Spacer(minLength: 0)
         }
         .foregroundStyle(.white)

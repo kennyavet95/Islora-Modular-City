@@ -27,6 +27,9 @@ struct RootView: View {
             VStack(spacing: 0) {
                 ResourceBarView(resources: session.world.player.resources, level: session.world.player.level)
                     .padding(.top, 8)
+                    .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: {
+                        if session.world.buildings.isEmpty { dragState.hudBottom = $0 }
+                    }
 
                 if showWelcomeBanner {
                     BlockoraBrandBannerView()
@@ -40,10 +43,33 @@ struct RootView: View {
                         .padding(.top, 4)
                 }
 
+                if !session.world.buildings.isEmpty {
+                    HStack(spacing: 8) {
+                        Spacer()
+                        cameraButton("minus.magnifyingglass", label: "Zoom out", id: "camera-zoom-out", command: .zoomOut)
+                        Text("\(dragState.zoomPercent)%")
+                            .font(.caption.monospacedDigit().weight(.bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 48)
+                            .accessibilityIdentifier("camera-zoom-level")
+                        cameraButton("plus.magnifyingglass", label: "Zoom in", id: "camera-zoom-in", command: .zoomIn)
+                        cameraButton("arrow.up.left.and.arrow.down.right", label: "Fit building", id: "camera-fit", command: .fit)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.top, 8)
+                    .disabled(dragState.isDragging)
+                    .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).maxY } action: {
+                        dragState.hudBottom = $0
+                    }
+                }
+
                 Spacer()
 
                 if session.isConstructionModeActive, let buildingID = session.activeBuildingID {
                     ConstructionView(session: session, dragState: dragState, buildingID: buildingID)
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: {
+                            dragState.constructionToolsTop = $0
+                        }
                         .transition(.move(edge: .bottom))
                 } else {
                     if let step = session.activeOnboardingStep, !OnboardingStep.constructionSteps.contains(step) {
@@ -51,6 +77,7 @@ struct RootView: View {
                             .padding(.bottom, 8)
                             .transition(.opacity)
                     }
+                    journeyCard
                     bottomTabBar
                 }
             }
@@ -98,7 +125,17 @@ struct RootView: View {
             if newPhase != .active { session.persist() }
         }
         .sheet(item: $presentedSheet) { sheet in
-            sheetView(for: sheet)
+            NavigationStack {
+                sheetView(for: sheet)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Close") { presentedSheet = nil }
+                                .fontWeight(.bold)
+                        }
+                    }
+                    .toolbarBackground(.hidden, for: .navigationBar)
+            }
+            .presentationDragIndicator(.visible)
         }
         .sheet(item: $offlineSummary) { summary in
             OfflineSummarySheet(summary: summary) { offlineSummary = nil }
@@ -113,9 +150,52 @@ struct RootView: View {
         }
     }
 
+    private func cameraButton(_ symbol: String, label: String, id: String, command: ConstructionDragState.CameraCommand) -> some View {
+        let limited = (command == .zoomIn && dragState.zoomPercent >= 400) ||
+            (command == .zoomOut && dragState.zoomPercent <= 25)
+        return Button { dragState.cameraCommand = command } label: {
+            Image(systemName: symbol)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+                .background(BlockoraPalette.panelBackground, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .disabled(limited || dragState.isDragging)
+        .opacity(limited ? 0.4 : 1)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(id)
+    }
+
     private var showWelcomeBanner: Bool {
         session.world.buildings.isEmpty && !session.isConstructionModeActive
     }
+
+    @ViewBuilder
+    private var journeyCard: some View {
+        if let goal = CityGoal.current(in: session.world) {
+            Button { presentedSheet = .contracts } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: goal.progress(in: session.world) >= goal.target ? "checkmark.seal.fill" : "flag.fill")
+                        .foregroundStyle(BlockoraPalette.coinGold)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(goal.title).font(.subheadline.weight(.bold))
+                        Text(goal.detail).font(.caption).lineLimit(2)
+                    }
+                    Spacer(minLength: 0)
+                    Text("\(goal.progress(in: session.world))/\(goal.target)")
+                        .font(.caption.weight(.heavy))
+                }
+                .foregroundStyle(.white)
+                .padding(12)
+                .background(BlockoraPalette.panelBackground.opacity(0.94), in: RoundedRectangle(cornerRadius: 14))
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 8)
+        }
+    }
+
 
     private var bottomTabBar: some View {
         HStack(spacing: 0) {

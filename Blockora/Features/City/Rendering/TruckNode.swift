@@ -18,12 +18,24 @@ final class TruckNode: SKNode {
         crate.strokeColor = .white
         crate.position = CGPoint(x: -2, y: 12)
         addChild(crate)
+        if !UIAccessibility.isReduceMotionEnabled {
+            crate.run(.repeatForever(.sequence([
+                .moveBy(x: 0, y: 1.5, duration: 0.22), .moveBy(x: 0, y: -1.5, duration: 0.22)
+            ])))
+        }
 
         for wheelX in [-10.0, 10.0] {
             let wheel = SKShapeNode(circleOfRadius: 5)
             wheel.fillColor = .black
             wheel.position = CGPoint(x: wheelX, y: -10)
             addChild(wheel)
+            let hub = SKShapeNode(rectOf: CGSize(width: 7, height: 1))
+            hub.fillColor = .lightGray
+            hub.strokeColor = .clear
+            wheel.addChild(hub)
+            if !UIAccessibility.isReduceMotionEnabled {
+                wheel.run(.repeatForever(.rotate(byAngle: -.pi * 2, duration: 0.7)))
+            }
         }
 
         let icon = SKLabelNode(text: resource.displayName.prefix(1).uppercased())

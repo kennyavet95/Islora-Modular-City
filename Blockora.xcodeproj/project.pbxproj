@@ -19,6 +19,7 @@
 /* Begin PBXFileReference section */
 		D7AFC97C305BB9BB005C5E4C /* Blockora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blockora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6E1ADBDCC5694ACAB2282C66 /* BlockoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BlockoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C695CFBC8AE4EC7AF37CDB7 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = IsloraScreenshots.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +33,7 @@
 			path = BlockoraTests;
 			sourceTree = "<group>";
 		};
+		BD8134F8269B4081B2390354 = {isa = PBXFileSystemSynchronizedRootGroup; path = IsloraScreenshots; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +47,7 @@
 			files = (
 			);
 		};
+		5CBA24BBCA5F485A9095B1FC = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -53,6 +56,7 @@
 			children = (
 				D7AFC97E305BB9BB005C5E4C /* Blockora */,
 				B133AE678FA142E88E107C04 /* BlockoraTests */,
+				BD8134F8269B4081B2390354 /* IsloraScreenshots */,
 				D7AFC97D305BB9BB005C5E4C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,6 +66,7 @@
 			children = (
 				D7AFC97C305BB9BB005C5E4C /* Blockora.app */,
 				6E1ADBDCC5694ACAB2282C66 /* BlockoraTests.xctest */,
+                4C695CFBC8AE4EC7AF37CDB7,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,6 +113,18 @@
 			productReference = 6E1ADBDCC5694ACAB2282C66 /* BlockoraTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+        65D6326CF71B47D2B9F8BDCF = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A4154C6356E94F9C83074656;
+            buildPhases = (DA4A50C2CEFE43169D1DD3B3, 5CBA24BBCA5F485A9095B1FC, 9CE0B4CB1FDD4D7AA9A98389);
+            buildRules = ();
+            dependencies = (EC24E46A4B3C4107B9C1E67C);
+            fileSystemSynchronizedGroups = (BD8134F8269B4081B2390354);
+            name = IsloraScreenshots;
+            productName = IsloraScreenshots;
+            productReference = 4C695CFBC8AE4EC7AF37CDB7;
+            productType = "com.apple.product-type.bundle.ui-testing";
+        };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -143,6 +160,7 @@
 			targets = (
 				D7AFC97B305BB9BB005C5E4C /* Blockora */,
 				8FB1EDFED5F54F7A841F41C4 /* BlockoraTests */,
+                65D6326CF71B47D2B9F8BDCF,
 			);
 		};
 /* End PBXProject section */
@@ -158,6 +176,7 @@
 			files = (
 			);
 		};
+		9CE0B4CB1FDD4D7AA9A98389 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -171,6 +190,7 @@
 			files = (
 			);
 		};
+		DA4A50C2CEFE43169D1DD3B3 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -310,6 +330,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Islora;
+				INFOPLIST_KEY_CFBundleName = Islora;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -320,7 +343,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.blockoragames.blockora;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -341,6 +364,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Islora;
+				INFOPLIST_KEY_CFBundleName = Islora;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -351,7 +377,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.blockoragames.blockora;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -371,7 +397,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.blockoragames.blockora.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -388,7 +414,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.blockoragames.blockora.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -397,6 +423,32 @@
 			};
 			name = Release;
 		};
+        66055694A6A646ABAB63D66C = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                GENERATE_INFOPLIST_FILE = YES;
+                PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.screenshots;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = Blockora;
+            };
+            name = Debug;
+        };
+        BFAE8601728543CB9645EF52 = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                GENERATE_INFOPLIST_FILE = YES;
+                PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.screenshots;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SWIFT_VERSION = 5.0;
+                TARGETED_DEVICE_FAMILY = "1,2";
+                TEST_TARGET_NAME = Blockora;
+            };
+            name = Release;
+        };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -424,6 +476,7 @@
 			);
 			defaultConfigurationName = Release;
 		};
+        A4154C6356E94F9C83074656 = {isa = XCConfigurationList; buildConfigurations = (66055694A6A646ABAB63D66C, BFAE8601728543CB9645EF52); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 	};
 	rootObject = D7AFC974305BB9BB005C5E4C /* Project object */;

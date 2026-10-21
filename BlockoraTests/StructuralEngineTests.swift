@@ -2,6 +2,16 @@ import XCTest
 @testable import Blockora
 
 final class StructuralEngineTests: XCTestCase {
+    func testHeavyProductionModulesSurviveTheirOwnWeightOnAFoundation() {
+        for definition in ["power_generator", "server_rack"] {
+            let modules = [
+                GridPosition(x: 0, y: 0): builtModule("foundation_basic", 0, 0),
+                GridPosition(x: 0, y: 1): builtModule(definition, 0, 1)
+            ]
+            XCTAssertTrue(StructuralEngine.evaluate(modules: modules).collapsingPositions.isEmpty, definition)
+        }
+    }
+
     private func builtModule(_ definitionID: String, _ x: Int, _ y: Int) -> ModuleInstance {
         ModuleInstance(definitionID: definitionID, position: GridPosition(x: x, y: y), constructionProgress: 1)
     }
@@ -47,7 +57,7 @@ final class StructuralEngineTests: XCTestCase {
         modules[GridPosition(x: -1, y: 1)] = builtModule("storage_crate", -1, 1) // independent branch, should survive
 
         // Core stays under its failure threshold; the generator directly above
-        // it (support capacity 6) is crushed by two more generators stacked on it.
+        // it (support capacity 14) is crushed by two more generators stacked on it.
         modules[GridPosition(x: 0, y: 1)] = builtModule("structural_core", 0, 1)
         modules[GridPosition(x: 0, y: 2)] = builtModule("power_generator", 0, 2)
         modules[GridPosition(x: 0, y: 3)] = builtModule("power_generator", 0, 3)

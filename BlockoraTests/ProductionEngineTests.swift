@@ -19,7 +19,7 @@ final class ProductionEngineTests: XCTestCase {
         modules[GridPosition(x: 0, y: 1)] = builtModule("solar_panel", 0, 1)
 
         let result = evaluate(modules)
-        XCTAssertEqual(result.netPerHour[.energy] ?? 0, 25, accuracy: 0.01)
+        XCTAssertEqual(result.netPerHour[.energy] ?? 0, 1500, accuracy: 0.01)
     }
 
     func testEnergyShortageBrownsOutConsumersProportionally() {
@@ -36,7 +36,7 @@ final class ProductionEngineTests: XCTestCase {
         // Consumption should scale down to match supply rather than going negative.
         XCTAssertEqual(result.netPerHour[.energy] ?? -1, 0, accuracy: 0.05)
         // Food output must be reduced below the unconstrained 4 x 30 = 120/h.
-        XCTAssertLessThan(result.netPerHour[.food] ?? 120, 120)
+        XCTAssertLessThan(result.netPerHour[.food] ?? 7200, 7200)
         XCTAssertGreaterThan(result.netPerHour[.food] ?? 0, 0)
     }
 

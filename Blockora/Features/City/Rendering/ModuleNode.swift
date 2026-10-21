@@ -12,6 +12,9 @@ final class ModuleNode: SKNode {
     private let icon: SKSpriteNode
     private let warningBadge: SKLabelNode
     private let constructionOverlay: SKShapeNode
+    private let activityLight = SKShapeNode(circleOfRadius: 3)
+    private var wasBuilt: Bool?
+    private var wasOperating: Bool?
     private let progressBar: SKShapeNode
 
     private(set) var moduleID: UUID
@@ -59,6 +62,12 @@ final class ModuleNode: SKNode {
         progressBar.isHidden = true
         addChild(progressBar)
 
+        activityLight.fillColor = .white
+        activityLight.strokeColor = .clear
+        activityLight.position = CGPoint(x: -size.width / 2 + 9, y: size.height / 2 - 9)
+        activityLight.zPosition = 4
+        activityLight.isHidden = true
+        addChild(activityLight)
         apply(instance: instance)
     }
 
@@ -68,6 +77,26 @@ final class ModuleNode: SKNode {
         gridPosition = instance.position
         guard let definition = instance.definition else { return }
 
+        let operating = instance.isBuilt && (status?.isOnline ?? false) && !definition.production.isEmpty
+        if operating != wasOperating {
+            wasOperating = operating
+            activityLight.isHidden = !operating
+            activityLight.removeAllActions()
+            if operating && !UIAccessibility.isReduceMotionEnabled {
+                activityLight.run(.repeatForever(.sequence([
+                    .fadeAlpha(to: 0.35, duration: 0.8), .fadeAlpha(to: 1, duration: 0.8)
+                ])))
+            }
+        }
+        if instance.isBuilt != wasBuilt {
+            wasBuilt = instance.isBuilt
+            constructionOverlay.removeAllActions()
+            if !instance.isBuilt && !UIAccessibility.isReduceMotionEnabled {
+                constructionOverlay.run(.repeatForever(.sequence([
+                    .fadeAlpha(to: 0.6, duration: 0.5), .fadeAlpha(to: 1, duration: 0.5)
+                ])))
+            }
+        }
         let color = SKColor(BlockoraPalette.moduleColor(for: definition.family))
         body.fillColor = color
         icon.texture = ModuleIconTextureFactory.texture(for: definition.family)
@@ -96,12 +125,40 @@ final class ModuleNode: SKNode {
     }
 
     func playSnapPulse() {
+        guard !UIAccessibility.isReduceMotionEnabled else { return }
         let up = SKAction.scale(to: 1.12, duration: 0.08)
         let down = SKAction.scale(to: 1.0, duration: 0.12)
         run(.sequence([up, down]))
     }
 
+    func playCompletionEffect() {
+        playSnapPulse()
+        guard !UIAccessibility.isReduceMotionEnabled else { return }
+        let ring = SKShapeNode(circleOfRadius: 26)
+        ring.strokeColor = SKColor(red: 1, green: 0.85, blue: 0.25, alpha: 1)
+        ring.lineWidth = 3
+        ring.zPosition = 12
+        addChild(ring)
+        ring.run(.sequence([.group([.scale(to: 2.1, duration: 0.5), .fadeOut(withDuration: 0.5)]), .removeFromParent()]))
+        for index in 0..<10 {
+            let spark = SKShapeNode(circleOfRadius: index.isMultiple(of: 2) ? 3 : 2)
+            spark.fillColor = index.isMultiple(of: 2) ? .white : ring.strokeColor
+            spark.strokeColor = .clear
+            spark.zPosition = 12
+            addChild(spark)
+            let angle = CGFloat(index) * .pi * 2 / 10
+            spark.run(.sequence([.group([
+                .moveBy(x: cos(angle) * 52, y: sin(angle) * 52, duration: 0.55),
+                .scale(to: 0.1, duration: 0.55), .fadeOut(withDuration: 0.55)
+            ]), .removeFromParent()]))
+        }
+    }
+
     func playCollapseAndRemove() {
+        if UIAccessibility.isReduceMotionEnabled {
+            run(.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()]))
+            return
+        }
         let shake = SKAction.sequence([
             .moveBy(x: 4, y: 0, duration: 0.03), .moveBy(x: -8, y: 0, duration: 0.05), .moveBy(x: 8, y: 0, duration: 0.05), .moveBy(x: -4, y: 0, duration: 0.03),
         ])

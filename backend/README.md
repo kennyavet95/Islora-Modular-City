@@ -1,6 +1,6 @@
-# BLOCKORA Backend
+# ISLORA Backend
 
-Server-authoritative Cloudflare Workers backend for BLOCKORA. The iOS client
+Server-authoritative Cloudflare Workers backend for ISLORA. The iOS client
 (Swift/SwiftUI/SpriteKit, in the sibling directories at the repo root) talks
 to this service for anything that touches resources, rewards, or shared
 world state — the client never computes or asserts a resource amount that
@@ -111,5 +111,5 @@ npm run deploy
 ```
 
 Requires `wrangler.toml`'s `database_id` / KV `id` / `preview_id` to point
-at real Cloudflare resources (see "Running locally" above for how to create
-them) and `wrangler login` to have been run once.
+at real Cloudflare resources (already configured for the Islora Cloudflare
+account) and a Cloudflare zone with DNS delegated to the account's nameservers.

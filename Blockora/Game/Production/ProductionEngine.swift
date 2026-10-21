@@ -27,7 +27,9 @@ enum ProductionEngine {
         structural: StructuralReport,
         synergy: SynergyReport,
         districtModifiers: ResourceBag = [:],
-        eventModifiers: ResourceBag = [:]
+        eventModifiers: ResourceBag = [:],
+        availableResources: ResourceBag? = nil,
+        intervalSeconds: TimeInterval = 1
     ) -> ProductionResult {
         let onlinePositions = building.modules.compactMap { position, instance -> (GridPosition, ModuleInstance, ModuleDefinition)? in
             guard instance.isBuilt,
@@ -74,8 +76,27 @@ enum ProductionEngine {
         var netPerHour: ResourceBag = [:]
         var operationalRatio: [GridPosition: Double] = [:]
 
+        // Recipes consume real stock plus this interval's harvest. A processing
+        // unit cannot keep producing Goods after its Food supply runs out.
+        let foodSupply = onlinePositions.reduce(0.0) { total, entry in
+            let (position, instance, definition) = entry
+            let powerRatio = definition.connectionRequirements.contains(.power) && (definition.production[.energy] ?? 0) < 0 ? energyRatio : 1
+            return total + max(adjusted[position]?[.food] ?? 0, 0) * instance.health * powerRatio
+        }
+        let foodDemand = onlinePositions.reduce(0.0) { total, entry in
+            total + max(-(entry.2.production[.food] ?? 0), 0) * entry.1.health
+        }
+        let foodRatio: Double
+        if let availableResources, foodDemand > 0 {
+            let stockPerHour = max(availableResources[.food] ?? 0, 0) * 3600 / max(intervalSeconds, 0.001)
+            foodRatio = min(1, (foodSupply + stockPerHour) / foodDemand)
+        } else {
+            foodRatio = 1
+        }
+
         for (position, instance, definition) in onlinePositions {
             var ratio = instance.health
+            if (definition.production[.food] ?? 0) < 0 { ratio *= foodRatio }
             if definition.connectionRequirements.contains(.power) && (definition.production[.energy] ?? 0) < 0 {
                 ratio *= energyRatio
             }

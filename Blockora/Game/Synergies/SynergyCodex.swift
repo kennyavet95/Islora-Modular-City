@@ -39,7 +39,7 @@ enum SynergyCodex {
         guard discovered else { return "??? + ??? = ???" }
         switch definition.effect {
         case .productionMultiplier(let resource, let multiplier):
-            let bonus = Int((multiplier - 1) * 100)
+            let bonus = Int(((multiplier - 1) * 100).rounded())
             return "\(definition.displayName) — \(resource.displayName) +\(bonus)%"
         }
     }

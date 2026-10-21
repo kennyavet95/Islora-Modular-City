@@ -13,6 +13,7 @@ import SwiftUI
 /// any size, in any container (List rows included), with no image at all.
 struct BlockoraGameButtonStyle: ButtonStyle {
     var compact = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
@@ -46,7 +47,7 @@ struct BlockoraGameButtonStyle: ButtonStyle {
                     .brightness(configuration.isPressed ? -0.08 : 0)
             }
             .opacity(isEnabled ? 1 : 0.45)
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .animation(.spring(response: 0.18, dampingFraction: 0.75), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.95 : 1)
+            .animation(reduceMotion ? nil : .spring(response: 0.22, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }

@@ -16,22 +16,32 @@ final class CityScene: SKScene {
     private var plotWorldPositions: [UUID: CGPoint] = [:]
     private var plotUnlockedState: [UUID: Bool] = [:]
     private var knownPlotIDs: Set<UUID> = []
+    #if DEBUG
+    private let testTimeScale = max(1, Double(ProcessInfo.processInfo.environment["ISLORA_TEST_TIME_SCALE"] ?? "1") ?? 1)
+    #else
+    private let testTimeScale = 1.0
+    #endif
     private var lastUpdateTime: TimeInterval?
     private var lastRenderedMode: Bool?
     private var hasSetInitialOverviewCamera = false
 
-    /// Overview-mode pan tracking. Kept in view points (not scene/world
+    /// Camera pan tracking in overview and construction. Kept in view points (not scene/world
     /// points) since those aren't affected by the camera's own position — the
     /// thing we're busy changing — while we compute the drag.
     private var panStartViewLocation: CGPoint?
-    private var panStartCameraX: CGFloat?
+    private var panStartCamera: CGPoint?
+    private var customCamera = false
+    private var lastViewport = CGRect.zero
+    private var lastContentRect = CGRect.zero
     private var didPanThisGesture = false
     /// Below this drag distance (in view points) a touch still counts as a
     /// tap on a plot rather than a pan, so a slightly-shaky tap doesn't get
     /// silently swallowed.
     private static let panTapThreshold: CGFloat = 10
 
-    static let plotSpacing: CGFloat = 260
+    static let plotSpacing: CGFloat = 432
+    static let minimumCameraScale: CGFloat = 0.25
+    static let maximumCameraScale: CGFloat = 4
     static let plotBaseY: CGFloat = -95
     /// Fixed overview zoom (not a fit-every-plot-in scale): keeps a plot's
     /// on-screen size constant and close to the background paving's own tile
@@ -44,6 +54,7 @@ final class CityScene: SKScene {
         backgroundColor = SKColor(BlockoraPalette.skyBottom)
         scaleMode = .resizeFill
 
+        worldLayer.speed = testTimeScale
         addChild(worldLayer)
         camera = cameraNode
         addChild(cameraNode)
@@ -137,7 +148,7 @@ final class CityScene: SKScene {
                 plotPadNodes[plot.id]?.removeFromParent()
                 addPlotPad(plot, at: worldPosition)
             }
-            plotPadNodes[plot.id]?.isHidden = plot.buildingID != nil
+            plotPadNodes[plot.id]?.isHidden = plot.buildingID != nil || session.isConstructionModeActive
         }
     }
 
@@ -171,12 +182,16 @@ final class CityScene: SKScene {
             pad.fillColor = SKColor.white.withAlphaComponent(0.18)
             pad.strokeColor = SKColor.white.withAlphaComponent(0.6)
             pad.lineWidth = 2
-            pad.lineWidth = 2
             let plus = SKLabelNode(text: "+")
             plus.fontSize = 40
             plus.fontColor = .white
             plus.verticalAlignmentMode = .center
             pad.addChild(plus)
+            if !UIAccessibility.isReduceMotionEnabled {
+                plus.run(.repeatForever(.sequence([
+                    .fadeAlpha(to: 0.6, duration: 1.2), .fadeAlpha(to: 1, duration: 1.2)
+                ])))
+            }
         }
         return pad
     }
@@ -205,22 +220,101 @@ final class CityScene: SKScene {
         return min(max(x, minX), maxX)
     }
 
+    private var constructionViewport: CGRect {
+        guard let view else { return CGRect(origin: .zero, size: size) }
+        let top = dragState.hudBottom > 0 ? view.convert(CGPoint(x: 0, y: dragState.hudBottom), from: nil).y : view.safeAreaInsets.top + 110
+        let bottom = dragState.constructionToolsTop > top ? view.convert(CGPoint(x: 0, y: dragState.constructionToolsTop), from: nil).y : view.bounds.height * 0.62
+        return CGRect(x: 12, y: top + 12, width: max(80, view.bounds.width - 24), height: max(80, bottom - top - 24))
+    }
+
+    /// Pure fit math: put the entire editing area inside the space between HUD and tools.
+    static func fittedCamera(content: CGRect, viewport: CGRect, viewSize: CGSize) -> (position: CGPoint, scale: CGFloat) {
+        let scale = min(maximumCameraScale, max(minimumCameraScale,
+            max((content.width + 32) / max(1, viewport.width), (content.height + 32) / max(1, viewport.height))))
+        return (CGPoint(x: content.midX - (viewport.midX - viewSize.width / 2) * scale,
+                        y: content.midY - (viewSize.height / 2 - viewport.midY) * scale), scale)
+    }
+
+    private var editingContentRect: CGRect? {
+        guard let id = session.activeBuildingID, let building = session.world.buildings[id],
+              let base = plotWorldPositions[building.plotID] else { return nil }
+        return BuildingNode.constructionRect(topRow: building.footprint.maxY).offsetBy(dx: base.x, dy: base.y)
+    }
+
     private func focusConstruction(on plotID: UUID, animated: Bool) {
-        guard let base = plotWorldPositions[plotID] else { return }
-        // Low y-offset (was 120) so the foundation row sits well above the
-        // SwiftUI chrome docked at the bottom of the screen — that chrome
-        // grew taller as Construction Mode gained more actions, and the old
-        // offset let the ground row render right underneath/behind it.
-        let target = CGPoint(x: base.x, y: base.y - 20)
-        move(camera: target, scale: 0.85, animated: animated)
+        guard let content = editingContentRect, let view else { return }
+        let fit = Self.fittedCamera(content: content, viewport: constructionViewport, viewSize: view.bounds.size)
+        lastContentRect = content
+        lastViewport = constructionViewport
+        move(camera: fit.position, scale: fit.scale, animated: animated)
+    }
+
+    func zoom(by factor: CGFloat, around point: CGPoint) {
+        guard factor.isFinite, factor > 0, dragState?.isDragging != true else { return }
+        cameraNode.removeAction(forKey: "cameraFocus")
+        let anchor = convertPoint(fromView: point)
+        cameraNode.setScale(min(Self.maximumCameraScale, max(Self.minimumCameraScale, cameraNode.xScale / factor)))
+        let shifted = convertPoint(fromView: point)
+        cameraNode.position.x += anchor.x - shifted.x
+        cameraNode.position.y += anchor.y - shifted.y
+        customCamera = true
+        didPanThisGesture = true
+        clampCamera()
+    }
+
+    private func clampCamera() {
+        if session.isConstructionModeActive, let content = editingContentRect, let view {
+            let viewport = constructionViewport
+            let scale = cameraNode.xScale
+            let center = CGPoint(x: content.midX - (viewport.midX - view.bounds.midX) * scale,
+                                 y: content.midY - (view.bounds.midY - viewport.midY) * scale)
+            let dx = max(0, (content.width - viewport.width * scale) / 2) + 60 * scale
+            let dy = max(0, (content.height - viewport.height * scale) / 2) + 60 * scale
+            cameraNode.position.x = min(center.x + dx, max(center.x - dx, cameraNode.position.x))
+            cameraNode.position.y = min(center.y + dy, max(center.y - dy, cameraNode.position.y))
+        } else {
+            let lastX = CGFloat(max(0, session.world.plots.count - 1)) * Self.plotSpacing
+            cameraNode.position.x = min(lastX + 180, max(-180, cameraNode.position.x))
+            cameraNode.position.y = min(350, max(-180, cameraNode.position.y))
+        }
+    }
+
+    private func syncCameraControls() {
+        if let command = dragState.cameraCommand {
+            dragState.cameraCommand = nil
+            switch command {
+            case .zoomIn: zoom(by: 1.25, around: session.isConstructionModeActive ? CGPoint(x: constructionViewport.midX, y: constructionViewport.midY) : CGPoint(x: size.width / 2, y: size.height / 2))
+            case .zoomOut: zoom(by: 0.8, around: session.isConstructionModeActive ? CGPoint(x: constructionViewport.midX, y: constructionViewport.midY) : CGPoint(x: size.width / 2, y: size.height / 2))
+            case .fit:
+                customCamera = false
+                if let building = session.activeBuildingID.flatMap({ session.world.buildings[$0] }), session.isConstructionModeActive {
+                    focusConstruction(on: building.plotID, animated: false)
+                } else { focusOverview(animated: false) }
+            }
+        }
+        if session.isConstructionModeActive, !dragState.isDragging,
+           constructionViewport != lastViewport || editingContentRect != lastContentRect {
+            if !customCamera, let id = session.activeBuildingID, let building = session.world.buildings[id] {
+                focusConstruction(on: building.plotID, animated: false)
+            } else {
+                lastViewport = constructionViewport
+                lastContentRect = editingContentRect ?? .zero
+                clampCamera()
+            }
+        }
+        let percent = Int((100 / cameraNode.xScale).rounded())
+        if dragState.zoomPercent != percent { dragState.zoomPercent = percent }
     }
 
     private func move(camera target: CGPoint, scale: CGFloat, animated: Bool) {
-        if animated {
-            cameraNode.run(.group([
+        cameraNode.removeAction(forKey: "cameraFocus")
+        if animated && !UIAccessibility.isReduceMotionEnabled {
+            let action = SKAction.group([
                 .move(to: target, duration: 0.45),
-                .scale(to: scale, duration: 0.45),
-            ]))
+                .scale(to: scale, duration: 0.45)
+            ])
+            action.timingMode = .easeInEaseOut
+            cameraNode.run(action, withKey: "cameraFocus")
         } else {
             cameraNode.position = target
             cameraNode.setScale(scale)
@@ -233,11 +327,12 @@ final class CityScene: SKScene {
         defer { lastUpdateTime = currentTime }
         guard let session else { return }
         let dt = lastUpdateTime.map { currentTime - $0 } ?? 0
-        if dt > 0, dt < 1 { session.tick(deltaSeconds: dt) }
+        if dt > 0, dt < 1 { session.tick(deltaSeconds: dt * testTimeScale) }
 
         syncPlots()
         syncMode()
         syncBuildings()
+        syncCameraControls()
         syncDrag()
         processSceneEvents()
     }
@@ -247,6 +342,8 @@ final class CityScene: SKScene {
         let active = session.isConstructionModeActive
         guard active != lastRenderedMode else { return }
         lastRenderedMode = active
+        customCamera = false
+        lastViewport = .zero
         if active, let buildingID = session.activeBuildingID, let building = session.world.buildings[buildingID] {
             focusConstruction(on: building.plotID, animated: true)
         } else {
@@ -268,7 +365,9 @@ final class CityScene: SKScene {
                 buildingNodes[buildingID] = node
             }
             guard let report = session.buildingReports[buildingID] else { continue }
-            node.sync(building: building, structural: report.structural)
+            node.isHidden = session.isConstructionModeActive && buildingID != session.activeBuildingID
+            node.setEditing(session.isConstructionModeActive && buildingID == session.activeBuildingID, topRow: building.footprint.maxY)
+            node.sync(building: building, structural: report.structural, workers: session.world.workers)
         }
 
         // A building can now disappear mid-session (demolished, not just
@@ -317,7 +416,7 @@ final class CityScene: SKScene {
     }
 
     private func spawnTruck(from buildingID: UUID, job: DeliveryJob) {
-        guard let origin = buildingNodes[buildingID]?.position else { return }
+        guard !session.isConstructionModeActive, let origin = buildingNodes[buildingID]?.position else { return }
         let destination = CGPoint(x: origin.x, y: Self.plotBaseY - 90)
         let routedJob = DeliveryJob(
             id: job.id, resource: job.resource, amount: job.amount,
@@ -331,60 +430,58 @@ final class CityScene: SKScene {
     // MARK: - Touch handling
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first, let session else { return }
-        let scenePoint = touch.location(in: worldLayer)
-
-        if session.isConstructionModeActive, let buildingID = session.activeBuildingID, let buildingNode = buildingNodes[buildingID] {
-            if dragState?.isDragging == true { return }
-            let localPoint = convert(scenePoint, to: buildingNode)
-            let position = BuildingNode.nearestGridPosition(to: localPoint)
-            let cellDistance = hypot(localPoint.x - CGFloat(position.x) * ModuleNode.cellSize, localPoint.y - CGFloat(position.y) * ModuleNode.cellSize)
-            if cellDistance < ModuleNode.cellSize * 0.5, session.world.buildings[buildingID]?.module(at: position) != nil {
-                session.removeModule(buildingID: buildingID, at: position)
-            }
-            return
-        }
-
-        // Overview mode now sits at a fixed zoom (not fit-to-all-plots), so a
-        // touch here might be the start of a sideways pan rather than a tap —
-        // wait for touchesEnded to decide which, based on how far it moved.
-        guard let view else { return }
+        guard let touch = touches.first, let view, dragState?.isDragging != true else { return }
         panStartViewLocation = touch.location(in: view)
-        panStartCameraX = cameraNode.position.x
-        didPanThisGesture = false
+        panStartCamera = cameraNode.position
+        didPanThisGesture = (event?.allTouches?.count ?? 1) > 1
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first, let session, !session.isConstructionModeActive,
-              let view, let startLocation = panStartViewLocation, let startCameraX = panStartCameraX else { return }
-        let currentLocation = touch.location(in: view)
-        let dx = currentLocation.x - startLocation.x
-        if !didPanThisGesture, abs(dx) > Self.panTapThreshold { didPanThisGesture = true }
+        guard let touch = touches.first, let view, let start = panStartViewLocation,
+              let cameraStart = panStartCamera, dragState?.isDragging != true else { return }
+        let current = touch.location(in: view)
+        let dx = current.x - start.x, dy = current.y - start.y
+        if hypot(dx, dy) > Self.panTapThreshold { didPanThisGesture = true }
         guard didPanThisGesture else { return }
-        // Dragging right should slide the *content* right (finger-follow),
-        // which means moving the camera left — hence the negative sign.
-        cameraNode.position.x = clampOverviewCameraX(startCameraX - dx * cameraNode.xScale)
+        cameraNode.removeAction(forKey: "cameraFocus")
+        customCamera = true
+        cameraNode.position = CGPoint(x: cameraStart.x - dx * cameraNode.xScale,
+                                      y: cameraStart.y + dy * cameraNode.yScale)
+        clampCamera()
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first, let session else { return }
-        defer { panStartViewLocation = nil; panStartCameraX = nil }
-        guard !session.isConstructionModeActive else { return }
-        guard !didPanThisGesture else { return }
-
-        let scenePoint = touch.location(in: worldLayer)
-        for (plotID, worldPosition) in plotWorldPositions {
-            let half = CGPoint(x: BuildingNode.footprintSize.width / 2, y: BuildingNode.footprintSize.height / 2)
-            let rect = CGRect(x: worldPosition.x - half.x, y: worldPosition.y - half.y, width: BuildingNode.footprintSize.width, height: BuildingNode.footprintSize.height)
-            if rect.contains(scenePoint) {
-                session.requestPlotInteraction(plotID)
-                return
+        defer { panStartViewLocation = nil; panStartCamera = nil }
+        guard !didPanThisGesture, dragState?.isDragging != true else { return }
+        let point = touch.location(in: worldLayer)
+        if session.isConstructionModeActive, let id = session.activeBuildingID,
+           let node = buildingNodes[id] {
+            let local = convert(touch.location(in: self), to: node)
+            let position = BuildingNode.nearestGridPosition(to: local)
+            if session.world.buildings[id]?.module(at: position) != nil {
+                session.pendingModuleRemovalPosition = position
             }
+            return
+        }
+        for plot in session.world.plots {
+            guard let base = plotWorldPositions[plot.id] else { continue }
+            var rect = CGRect(x: base.x - 110, y: base.y - 110, width: 220, height: 220)
+            if let building = session.world.building(on: plot.id), !building.isEmpty {
+                let bounds = building.footprint
+                let cells = CGRect(x: base.x + CGFloat(bounds.minX) * 72 - 36,
+                                   y: base.y + CGFloat(bounds.minY) * 72 - 36,
+                                   width: CGFloat(bounds.maxX - bounds.minX + 1) * 72,
+                                   height: CGFloat(bounds.maxY - bounds.minY + 1) * 72)
+                rect = rect.union(cells)
+            }
+            if rect.contains(point) { session.requestPlotInteraction(plot.id); return }
         }
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         panStartViewLocation = nil
-        panStartCameraX = nil
+        panStartCamera = nil
+        didPanThisGesture = true
     }
 }

@@ -18,7 +18,7 @@ enum OnboardingStep: Int, Codable, CaseIterable, Comparable {
         switch self {
         case .tapPlot: return "Tap an empty, unlocked plot to start your first building."
         case .placeFoundation: return "Drag a Foundation onto the grid — every building starts with one."
-        case .addAnotherModule: return "Drag another module next to it to keep growing your building."
+        case .addAnotherModule: return "Drag a Field above your Foundation. Your first harvest will earn coins from City Orders."
         case .finishConstruction: return "Tap Done when you're happy with your building for now."
         case .exploreTabs: return "Check Contracts, Codex and your World Project down here."
         }

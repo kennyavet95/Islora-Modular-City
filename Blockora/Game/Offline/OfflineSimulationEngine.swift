@@ -9,18 +9,8 @@ struct OfflineSimulationResult {
     var updatedResources: ResourceBag
 }
 
-/// Server-authoritative-shaped offline production (§34). The client runs this
-/// same pure function locally today (LocalEconomyService) and will eventually
-/// call the Cloudflare equivalent instead — the *math* doesn't change, only
-/// who's trusted to run it.
-///
-/// Deliberately closed-form rather than a tick loop: because a building's
-/// online/synergy state can't change while the player is away (no input is
-/// possible), each resource's net rate is constant for the whole window, so
-/// its trajectory (grow to cap, or drain to zero and stop) can be solved
-/// directly. This keeps the engine fast, deterministic and easy to unit test
-/// while still respecting storage caps and "ran out partway through" (§34) —
-/// it does not just multiply incomePerHour × hours.
+/// Bounded one-minute steps share the live recipe rules, stop at storage caps,
+/// and split at event boundaries so expired boosts do not last all night.
 enum OfflineSimulationEngine {
     static let maxOfflineDuration: TimeInterval = 8 * 3600
 
@@ -30,25 +20,42 @@ enum OfflineSimulationEngine {
         buildings: [BuildingInstance],
         playerLevel: Int,
         elapsedSince lastSync: Date,
-        now: Date
+        now: Date,
+        districts: [District] = [],
+        plots: [Plot] = [],
+        events: [WorldEvent] = []
     ) -> OfflineSimulationResult {
         let rawElapsed = max(0, now.timeIntervalSince(lastSync))
         let elapsed = min(rawElapsed, maxOfflineDuration)
-        let hours = elapsed / 3600
-
-        var ratePerHour: ResourceBag = [:]
-        for building in buildings {
-            let structural = StructuralEngine.evaluate(modules: building.modules)
-            let synergy = SynergyEngine.evaluate(modules: building.modules, playerLevel: playerLevel)
-            let production = ProductionEngine.evaluate(building: building, structural: structural, synergy: synergy)
-            ratePerHour.add(production.netPerHour)
+        let orderedBuildings = buildings.sorted { $0.id.uuidString < $1.id.uuidString }
+        let reports = orderedBuildings.map { building in
+            (StructuralEngine.evaluate(modules: building.modules),
+             SynergyEngine.evaluate(modules: building.modules, playerLevel: playerLevel))
         }
-
         var finalResources = resources
-        for (resource, rate) in ratePerHour {
-            let start = resources[resource, default: 0]
-            let cap = storageCapacity[resource]
-            finalResources[resource] = projectedAmount(start: start, ratePerHour: rate, hours: hours, cap: cap)
+        var simulated: TimeInterval = 0
+        let start = now.addingTimeInterval(-elapsed)
+        while simulated < elapsed {
+            let date = start.addingTimeInterval(simulated)
+            let boundary = events.flatMap { [$0.startDate, $0.endDate] }
+                .filter { $0 > date }.min()?.timeIntervalSince(date) ?? 60
+            let step = min(60, elapsed - simulated, boundary)
+            for (index, building) in orderedBuildings.enumerated() {
+                let districtModifiers = plots.first(where: { $0.id == building.plotID })
+                    .flatMap { plot in districts.first(where: { $0.id == plot.districtID }) }?.productionModifiers ?? [:]
+                let production = ProductionEngine.evaluate(
+                    building: building, structural: reports[index].0, synergy: reports[index].1,
+                    districtModifiers: districtModifiers,
+                    eventModifiers: WorldEventEngine.combinedModifiers(events, at: date),
+                    availableResources: finalResources, intervalSeconds: step
+                )
+                for (resource, rate) in production.netPerHour {
+                    var amount = max(0, finalResources[resource, default: 0] + rate * step / 3600)
+                    if let cap = storageCapacity[resource] { amount = min(amount, cap) }
+                    finalResources[resource] = amount
+                }
+            }
+            simulated += step
         }
 
         var deltas: ResourceBag = [:]
@@ -65,20 +72,4 @@ enum OfflineSimulationEngine {
         )
     }
 
-    /// Solves a constant-rate trajectory over `hours`, stopping at zero if it's
-    /// draining or at `cap` if it's filling (excess production beyond a full
-    /// storage is lost, matching typical offline-production expectations).
-    private static func projectedAmount(start: Double, ratePerHour: Double, hours: Double, cap: Double?) -> Double {
-        guard ratePerHour != 0, hours > 0 else { return start }
-        if ratePerHour > 0 {
-            let unclamped = start + ratePerHour * hours
-            return cap.map { min(unclamped, $0) } ?? unclamped
-        } else {
-            let timeToZero = start / -ratePerHour
-            if timeToZero >= hours {
-                return start + ratePerHour * hours
-            }
-            return 0
-        }
-    }
 }

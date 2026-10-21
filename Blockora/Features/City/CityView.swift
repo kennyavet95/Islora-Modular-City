@@ -9,9 +9,25 @@ struct CityView: UIViewRepresentable {
     let session: GameSession
     let dragState: ConstructionDragState
 
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator: NSObject {
+        @objc func pinch(_ recognizer: UIPinchGestureRecognizer) {
+            guard let view = recognizer.view as? SKView, let scene = view.scene as? CityScene else { return }
+            if recognizer.state == .began || recognizer.state == .changed {
+                scene.zoom(by: recognizer.scale, around: recognizer.location(in: view))
+                recognizer.scale = 1
+            }
+        }
+    }
+
     func makeUIView(context: Context) -> SKView {
         let view = SKView()
         view.ignoresSiblingOrder = true
+        view.isMultipleTouchEnabled = true
+        let pinch = UIPinchGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.pinch(_:)))
+        pinch.cancelsTouchesInView = true
+        view.addGestureRecognizer(pinch)
         view.preferredFramesPerSecond = 60
         #if DEBUG
         view.showsFPS = false

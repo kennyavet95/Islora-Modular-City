@@ -43,7 +43,7 @@ struct ModuleDefinition: Identifiable, Codable, Hashable {
 /// Static registry of every module definition in the game. Data-driven so new
 /// modules/tiers are additions here, not new engine branches (§44).
 enum ModuleCatalog {
-    static let all: [ModuleDefinition] = structuralStaples + farmModules + powerPlantModules + dataCenterModules
+    static let all: [ModuleDefinition] = structuralStaples + farmModules + powerPlantModules + dataCenterModules + advancedModules
 
     static func definition(for id: String) -> ModuleDefinition? {
         byID[id]
@@ -52,7 +52,10 @@ enum ModuleCatalog {
     static func modules(for buildingClass: BuildingClass, unlockedUpTo level: Int) -> [ModuleDefinition] {
         all
             .filter { $0.buildingClasses.contains(buildingClass) && $0.unlockLevel <= level }
-            .sorted { $0.unlockLevel == $1.unlockLevel ? $0.displayName < $1.displayName : $0.unlockLevel < $1.unlockLevel }
+            .sorted {
+                if $0.isGroundAnchor != $1.isGroundAnchor { return $0.isGroundAnchor }
+                return $0.unlockLevel == $1.unlockLevel ? $0.displayName < $1.displayName : $0.unlockLevel < $1.unlockLevel
+            }
     }
 
     private static let byID: [String: ModuleDefinition] = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
@@ -78,8 +81,8 @@ enum ModuleCatalog {
         ),
         ModuleDefinition(
             id: "office_basic", family: .office, buildingClasses: Set(BuildingClass.allCases),
-            displayName: "Site Office", flavorText: "Coordinates workers and unlocks new hires.",
-            weight: 4, support: 10, production: [.coins: 4], storageCapacityBonus: [:],
+            displayName: "Site Office", flavorText: "Coordinates the site and earns a steady coin income.",
+            weight: 4, support: 10, production: [.coins: 240], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 0, connectionRequirements: [],
             workersRequired: [.builder: 1], buildTimeSeconds: 10,
             placementCost: [.coins: 70], unlockLevel: 1
@@ -96,7 +99,7 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "solar_panel", family: .solarPanel, buildingClasses: Set(BuildingClass.allCases),
             displayName: "Solar Panel", flavorText: "Quiet, clean energy — no fuel deliveries required.",
-            weight: 3, support: 4, production: [.energy: 25], storageCapacityBonus: [:],
+            weight: 3, support: 4, production: [.energy: 1500], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 0, connectionRequirements: [],
             workersRequired: [.electrician: 1], buildTimeSeconds: 12,
             placementCost: [.coins: 120], unlockLevel: 1
@@ -109,7 +112,7 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "farm_field", family: .farmField, buildingClasses: [.farm],
             displayName: "Field", flavorText: "Rows of crops. Simple, reliable food.",
-            weight: 2, support: 4, production: [.food: 18], storageCapacityBonus: [:],
+            weight: 2, support: 4, production: [.food: 1080], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 0, connectionRequirements: [],
             workersRequired: [.builder: 1], buildTimeSeconds: 10,
             placementCost: [.coins: 50], unlockLevel: 1
@@ -117,7 +120,7 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "greenhouse", family: .greenhouse, buildingClasses: [.farm],
             displayName: "Greenhouse", flavorText: "Climate-controlled growing — needs power to run its vents.",
-            weight: 3, support: 3, production: [.food: 30, .energy: -8], storageCapacityBonus: [:],
+            weight: 3, support: 3, production: [.food: 1800, .energy: -480], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 0, connectionRequirements: [.power],
             workersRequired: [.builder: 1, .technician: 1], buildTimeSeconds: 18,
             placementCost: [.coins: 140], unlockLevel: 1
@@ -125,7 +128,7 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "water_tank", family: .waterTank, buildingClasses: [.farm],
             displayName: "Water Tank", flavorText: "Stores water for irrigation. Pairs well with a greenhouse.",
-            weight: 3, support: 5, production: [.food: 5], storageCapacityBonus: [:],
+            weight: 3, support: 5, production: [.food: 300], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 0, connectionRequirements: [],
             workersRequired: [.builder: 1], buildTimeSeconds: 12,
             placementCost: [.coins: 80], unlockLevel: 1
@@ -133,7 +136,7 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "processing_unit", family: .processingUnit, buildingClasses: [.farm],
             displayName: "Processing Unit", flavorText: "Turns raw food into packaged Goods for market.",
-            weight: 5, support: 4, production: [.food: -10, .goods: 14], storageCapacityBonus: [:],
+            weight: 5, support: 4, production: [.food: -600, .goods: 840], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 0, connectionRequirements: [.core],
             workersRequired: [.engineer: 1], buildTimeSeconds: 20,
             placementCost: [.coins: 160], unlockLevel: 2
@@ -146,7 +149,7 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "power_generator", family: .powerGenerator, buildingClasses: [.powerPlant],
             displayName: "Generator", flavorText: "The plant's core output — heavy, and hungry for support.",
-            weight: 10, support: 6, production: [.energy: 50], storageCapacityBonus: [:],
+            weight: 10, support: 14, production: [.energy: 3000], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 0, connectionRequirements: [.core],
             workersRequired: [.electrician: 1, .engineer: 1], buildTimeSeconds: 24,
             placementCost: [.coins: 260], unlockLevel: 3
@@ -167,7 +170,7 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "server_rack", family: .server, buildingClasses: [.dataCenter],
             displayName: "Server", flavorText: "Data, at the cost of heat and hunger for power.",
-            weight: 8, support: 5, production: [.data: 35, .energy: -18], storageCapacityBonus: [:],
+            weight: 8, support: 12, production: [.data: 2100, .energy: -1080], storageCapacityBonus: [:],
             heatOutput: 12, coolingCapacity: 0, connectionRequirements: [.power, .core],
             workersRequired: [.technician: 2], buildTimeSeconds: 22,
             placementCost: [.coins: 220], unlockLevel: 4
@@ -175,10 +178,47 @@ enum ModuleCatalog {
         ModuleDefinition(
             id: "cooling_unit", family: .coolingUnit, buildingClasses: [.dataCenter],
             displayName: "Cooling Unit", flavorText: "Keeps the racks from throttling themselves.",
-            weight: 4, support: 4, production: [.energy: -5], storageCapacityBonus: [:],
+            weight: 4, support: 4, production: [.energy: -300], storageCapacityBonus: [:],
             heatOutput: 0, coolingCapacity: 25, connectionRequirements: [.power],
             workersRequired: [.electrician: 1], buildTimeSeconds: 16,
             placementCost: [.coins: 130], unlockLevel: 4
         ),
     ]
+    // Later tiers reuse existing art, placement and family synergy rules.
+    private static let advancedModules: [ModuleDefinition] = [
+        ModuleDefinition(
+            id: "hydroponic_greenhouse", family: .greenhouse, buildingClasses: [.farm],
+            displayName: "Hydroponic Garden", flavorText: "Twice the harvest. Needs more energy and strong support.",
+            weight: 5, support: 8, production: [.food: 3600, .energy: -1200], storageCapacityBonus: [:],
+            heatOutput: 0, coolingCapacity: 0, connectionRequirements: [.power, .core],
+            workersRequired: [.builder: 1, .technician: 1], buildTimeSeconds: 30,
+            placementCost: [.coins: 650, .goods: 40], unlockLevel: 5
+        ),
+        ModuleDefinition(
+            id: "coastal_turbine", family: .powerGenerator, buildingClasses: [.powerPlant],
+            displayName: "Coastal Turbine", flavorText: "High output from a heavier, carefully supported module.",
+            weight: 14, support: 20, production: [.energy: 6000], storageCapacityBonus: [:],
+            heatOutput: 0, coolingCapacity: 0, connectionRequirements: [.core],
+            workersRequired: [.electrician: 1, .engineer: 1], buildTimeSeconds: 35,
+            placementCost: [.coins: 900, .goods: 60], unlockLevel: 6
+        ),
+        ModuleDefinition(
+            id: "research_server", family: .server, buildingClasses: [.dataCenter],
+            displayName: "Research Server", flavorText: "Double the data, double the heat. Plan extra cooling and power.",
+            weight: 10, support: 16, production: [.data: 4200, .energy: -2160], storageCapacityBonus: [:],
+            heatOutput: 24, coolingCapacity: 0, connectionRequirements: [.power, .core],
+            workersRequired: [.technician: 2], buildTimeSeconds: 40,
+            placementCost: [.coins: 1200, .goods: 80], unlockLevel: 7
+        ),
+        ModuleDefinition(
+            id: "island_depot", family: .storage, buildingClasses: Set(BuildingClass.allCases),
+            displayName: "Island Depot", flavorText: "Capacity for the island's largest landmark shipments.",
+            weight: 10, support: 16, production: [:],
+            storageCapacityBonus: [.food: 600, .goods: 600, .data: 600, .energy: 600],
+            heatOutput: 0, coolingCapacity: 0, connectionRequirements: [.core],
+            workersRequired: [.builder: 1, .engineer: 1], buildTimeSeconds: 35,
+            placementCost: [.coins: 1000, .goods: 100], unlockLevel: 8
+        )
+    ]
+
 }

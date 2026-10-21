@@ -1,8 +1,6 @@
 import AVFoundation
 
-/// Centralized sound effect playback (§56). MVP ships with system sounds so
-/// the game is never silent while bespoke SFX are produced; swapping in real
-/// assets later only touches `SoundEffect.fileName`.
+/// Short original bundled sound effects, mixed with the player's own audio.
 enum SoundEffect: String {
     case moduleSnap
     case modulePlace
@@ -19,14 +17,15 @@ final class AudioManager {
     static let shared = AudioManager()
 
     private var players: [SoundEffect: AVAudioPlayer] = [:]
-    var isMuted = false
+    var isMuted = UserDefaults.standard.bool(forKey: "islora.soundMuted") {
+        didSet { UserDefaults.standard.set(isMuted, forKey: "islora.soundMuted") }
+    }
 
     private init() {
         try? AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
     }
 
-    /// No-op safe: if a bundled asset is missing (true until art/audio pass),
-    /// this simply does nothing rather than crashing the build.
+    /// Missing audio remains non-fatal.
     func play(_ effect: SoundEffect) {
         guard !isMuted else { return }
         if let cached = players[effect] {
@@ -38,6 +37,7 @@ final class AudioManager {
             ?? Bundle.main.url(forResource: effect.rawValue, withExtension: "wav") else { return }
         guard let player = try? AVAudioPlayer(contentsOf: url) else { return }
         players[effect] = player
+        player.volume = 0.65
         player.play()
     }
 }

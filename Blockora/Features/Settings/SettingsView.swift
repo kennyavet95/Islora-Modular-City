@@ -9,6 +9,7 @@ struct SettingsView: View {
     var body: some View {
         ZStack {
             BlockoraSheetBackground()
+            ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Settings")
                     .font(.largeTitle.weight(.black))
@@ -20,6 +21,16 @@ struct SettingsView: View {
                         .foregroundStyle(.white)
                         .tint(BlockoraPalette.craneOrange)
                         .onChange(of: isMuted) { _, newValue in AudioManager.shared.isMuted = newValue }
+                }
+
+                section("How to Play") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Build foundations, then connect production modules. Workers finish each module automatically.")
+                        Text("Fields grow Food. Add a Core and Processing Unit for Goods. Solar Panels power greenhouses and servers.")
+                        Text("Complete Journey goals and City Orders to earn coins and XP. New buildings and modules unlock through Level 8.")
+                        Text("Reinforce stressed structures, cool your servers, and save your best layouts as Blueprints.")
+                    }
+                    .font(.caption).foregroundStyle(.white.opacity(0.85))
                 }
 
                 section("About") {
@@ -35,6 +46,7 @@ struct SettingsView: View {
                 Spacer()
             }
             .padding(22)
+            }
 
             if showResetConfirmation {
                 Color.black.opacity(0.35).ignoresSafeArea()
@@ -52,9 +64,8 @@ struct SettingsView: View {
                                 .buttonStyle(BlockoraGameButtonStyle())
                                 .opacity(0.72)
                             Button("Reset") {
-                                SaveGameStore.shared.deleteSave()
                                 showResetConfirmation = false
-                                Task { await session.loadGame() }
+                                Task { await session.resetGame() }
                             }
                             .buttonStyle(BlockoraGameButtonStyle())
                         }
@@ -65,8 +76,8 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showWebsite) {
             NavigationStack {
-                WebView(url: URL(string: "https://blockora6.xyz")!)
-                    .navigationTitle("Blockora")
+                WebView(url: URL(string: "https://isloramodularcity.online")!)
+                    .navigationTitle("Islora")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {

@@ -38,7 +38,7 @@ enum WorldEventEngine {
             flavorText: "Demand for Data is spiking across the region.",
             resourceModifiers: [.data: 1.80],
             startDate: date,
-            endDate: date.addingTimeInterval(6 * 3600)
+            endDate: date.addingTimeInterval(10 * 60)
         )
     }
 
@@ -49,7 +49,7 @@ enum WorldEventEngine {
             flavorText: "The region is stocking up on Food for the festival.",
             resourceModifiers: [.food: 1.6],
             startDate: date,
-            endDate: date.addingTimeInterval(5 * 3600)
+            endDate: date.addingTimeInterval(8 * 60)
         )
     }
 
@@ -60,7 +60,7 @@ enum WorldEventEngine {
             flavorText: "Factories nearby are buying up Goods at a premium.",
             resourceModifiers: [.goods: 1.7],
             startDate: date,
-            endDate: date.addingTimeInterval(4 * 3600)
+            endDate: date.addingTimeInterval(10 * 60)
         )
     }
 
@@ -71,7 +71,7 @@ enum WorldEventEngine {
             flavorText: "A regional grid fault is limiting Energy output.",
             resourceModifiers: [.energy: 0.65],
             startDate: date,
-            endDate: date.addingTimeInterval(3 * 3600)
+            endDate: date.addingTimeInterval(5 * 60)
         )
     }
 
@@ -79,7 +79,9 @@ enum WorldEventEngine {
     /// cases by hand when picking one at random.
     static let catalog: [(Date) -> WorldEvent] = [techBoom, harvestFestival, industrialSurge, energyShortage]
 
-    static func randomEvent(starting date: Date) -> WorldEvent {
-        (catalog.randomElement() ?? techBoom)(date)
+    static func randomEvent(starting date: Date, level: Int = 4) -> WorldEvent {
+        let available: [(Date) -> WorldEvent] = level < 2 ? [harvestFestival] :
+            (level < 4 ? [harvestFestival, industrialSurge, energyShortage] : catalog)
+        return (available.randomElement() ?? harvestFestival)(date)
     }
 }

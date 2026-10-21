@@ -1,20 +1,31 @@
 workflows:
   ios-release:
-    name: iOS Release (App Store / TestFlight)
+    name: Islora — App Store upload
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       groups:
-        - appstore_credentials
+        - islora_appstore_credentials
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.blockoragames.blockora
+        bundle_identifier: com.isloragames.islora
       vars:
         XCODE_PROJECT: "Blockora.xcodeproj"
-        XCODE_SCHEME: "Blockora"
-        BUNDLE_ID: "com.blockoragames.blockora"
-      xcode: latest
+        XCODE_SCHEME: "Islora"
+        BUNDLE_ID: "com.isloragames.islora"
+      xcode: "27.0"
     scripts:
+      - name: Validate release metadata
+        script: |
+          python3 release/scripts/validate.py
+      - name: Check credentials and set build number
+        script: |
+          set -eu
+          : "${APP_STORE_CONNECT_PRIVATE_KEY:?Set the new account API private key}"
+          : "${APP_STORE_CONNECT_KEY_IDENTIFIER:?Set the new account Key ID}"
+          : "${APP_STORE_CONNECT_ISSUER_ID:?Set the new account Issuer ID}"
+          BUILD_NUMBER="${BUILD_NUMBER:-$((CM_BUILD_NUMBER + 1))}"
+          agvtool new-version -all "$BUILD_NUMBER"
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
@@ -31,4 +42,5 @@ workflows:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: false
+        submit_to_testflight: true
+        submit_to_app_store: false

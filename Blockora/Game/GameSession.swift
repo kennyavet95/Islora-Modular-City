@@ -49,6 +49,7 @@ final class GameSession {
     var isConstructionModeActive = false
     var pendingPlotSelectionID: UUID?
     var pendingPlotUnlockID: UUID?
+    var pendingModuleRemovalPosition: GridPosition?
     /// The streak day (1...7) a claim would land on right now, or nil if
     /// today's bonus is already claimed. RootView shows the claim overlay
     /// whenever this is non-nil.
@@ -88,7 +89,15 @@ final class GameSession {
     private var lastActiveWorldEventIDs: Set<UUID> = []
 
     init(service: EconomyService? = nil) {
+        #if DEBUG
+        if let saveName = ProcessInfo.processInfo.environment["ISLORA_TEST_SAVE_NAME"] {
+            self.service = service ?? LocalEconomyService(store: SaveGameStore(fileName: saveName))
+        } else {
+            self.service = service ?? LocalEconomyService()
+        }
+        #else
         self.service = service ?? LocalEconomyService()
+        #endif
         self.world = .newGame()
     }
 
@@ -97,8 +106,15 @@ final class GameSession {
     func loadGame() async {
         world = (try? await service.loadWorld()) ?? .newGame()
         if world.worldProject == nil { world.worldProject = .skybridge() }
+        if world.worldProject?.name == "Blockora Skybridge" {
+            world.worldProject?.name = "Islora Skybridge"
+        }
         if world.player.onboardingStep == nil {
             world.player.onboardingStep = OnboardingEngine.initialValue(hasExistingBuildings: !world.buildings.isEmpty)
+        }
+        EconomyEngine.refreshBoard(&world)
+        if world.workers.filter({ $0.type == .technician }).count < 2 {
+            world.workers.append(Worker(name: "Nia", type: .technician))
         }
         lastActiveWorldEventIDs = Set(WorldEventEngine.activeEvents(world.worldEvents, at: Date()).map(\.id))
         recomputeAllReports()
@@ -145,6 +161,22 @@ final class GameSession {
         persist()
     }
 
+    func resetGame() async {
+        world = .newGame()
+        buildingReports.removeAll()
+        pendingEvents.removeAll()
+        deliveryAccumulators.removeAll()
+        activeBuildingID = nil
+        isConstructionModeActive = false
+        pendingPlotSelectionID = nil
+        pendingPlotUnlockID = nil
+        pendingModuleRemovalPosition = nil
+        pendingOfflineSummary = nil
+        pendingDailyBonusDay = nil
+        try? await service.saveWorld(world)
+        await loadGame()
+    }
+
     func persist() {
         world.player.lastSyncDate = Date()
         Task { try? await service.saveWorld(world) }
@@ -171,7 +203,16 @@ final class GameSession {
         for buildingID in world.buildings.keys.sorted(by: { $0.uuidString < $1.uuidString }) {
             advanceConstruction(buildingID: buildingID, deltaSeconds: deltaSeconds)
             guard let report = buildingReports[buildingID] else { continue }
-            for (resource, rate) in report.production.netPerHour {
+            let districtModifiers = world.plots.first(where: { $0.id == world.buildings[buildingID]?.plotID })
+                .flatMap { plot in world.districts.first(where: { $0.id == plot.districtID }) }?.productionModifiers ?? [:]
+            let production = ProductionEngine.evaluate(
+                building: world.buildings[buildingID]!, structural: report.structural, synergy: report.synergy,
+                districtModifiers: districtModifiers,
+                eventModifiers: WorldEventEngine.combinedModifiers(world.worldEvents, at: Date()),
+                availableResources: world.player.resources, intervalSeconds: deltaSeconds
+            )
+            buildingReports[buildingID]?.production = production
+            for (resource, rate) in production.netPerHour {
                 let delta = rate * hours
                 let cap = world.player.storageCapacity[resource]
                 var updated = (world.player.resources[resource] ?? 0) + delta
@@ -270,7 +311,7 @@ final class GameSession {
             world.worldEvents.removeAll { $0.endDate < now.addingTimeInterval(-3600) }
             let currentlyActive = WorldEventEngine.activeEvents(world.worldEvents, at: now)
             if currentlyActive.isEmpty, Double.random(in: 0...1) < Self.worldEventStartChance {
-                let event = WorldEventEngine.randomEvent(starting: now)
+                let event = WorldEventEngine.randomEvent(starting: now, level: world.player.level)
                 world.worldEvents.append(event)
                 pendingEvents.append(.worldEventStarted(event))
                 HapticManager.shared.contractCompleted()
@@ -410,6 +451,7 @@ final class GameSession {
 
     func removeModule(buildingID: UUID, at position: GridPosition) {
         guard let building = world.buildings[buildingID] else { return }
+        if let module = building.modules[position] { releaseWorkers(assignedTo: module.id) }
         world.buildings[buildingID] = ConstructionEngine.remove(building: building, at: position)
         recomputeReport(for: buildingID)
         persist()
@@ -429,6 +471,7 @@ final class GameSession {
         }
         world.buildings.removeValue(forKey: buildingID)
         buildingReports.removeValue(forKey: buildingID)
+        recomputeStorageCapacity()
         if activeBuildingID == buildingID { exitConstructionMode() }
         persist()
     }
@@ -564,6 +607,7 @@ final class GameSession {
 
     func acceptContract(_ contractID: UUID) {
         guard let index = world.contracts.firstIndex(where: { $0.id == contractID }) else { return }
+        guard world.contracts[index].status == .available else { return }
         world.contracts[index].status = .accepted
         world.contracts[index].acceptedAt = Date()
         persist()
@@ -586,7 +630,40 @@ final class GameSession {
         HapticManager.shared.contractCompleted()
         AudioManager.shared.play(.contractComplete)
         pendingEvents.append(.contractCompleted(world.contracts[index]))
-        if didLevelUp { pendingEvents.append(.levelUp(newLevel: world.player.level)) }
+        world.completedCityOrders = (world.completedCityOrders ?? 0) + 1
+        world.contracts[index] = EconomyEngine.replacement(for: contract, index: index, world: world)
+        if didLevelUp {
+            pendingEvents.append(.levelUp(newLevel: world.player.level))
+            recomputeAllReports()
+        }
+        persist()
+    }
+
+    func refreshContracts() {
+        EconomyEngine.refreshBoard(&world)
+        persist()
+    }
+
+    func skipContract(_ id: UUID) {
+        guard let index = world.contracts.firstIndex(where: { $0.id == id }),
+              world.contracts[index].status == .available else { return }
+        let old = world.contracts[index]
+        world.contracts[index] = EconomyEngine.replacement(for: old, index: index, world: world)
+        persist()
+    }
+
+    func claimCityGoal() {
+        guard let goal = CityGoal.current(in: world), goal.progress(in: world) >= goal.target else { return }
+        world.claimedCityGoalIDs = (world.claimedCityGoalIDs ?? []).union([goal.id])
+        world.player.resources[.coins, default: 0] += goal.coins
+        let progression = ProgressionEngine.applyExperience(goal.experience, level: world.player.level,
+                                                            experience: world.player.experience)
+        world.player.level = progression.level
+        world.player.experience = progression.experience
+        if progression.didLevelUp { pendingEvents.append(.levelUp(newLevel: progression.level)) }
+        HapticManager.shared.contractCompleted()
+        AudioManager.shared.play(.contractComplete)
+        recomputeAllReports()
         persist()
     }
 
@@ -637,12 +714,27 @@ final class GameSession {
         for buildingID in world.buildings.keys { recomputeReport(for: buildingID) }
     }
 
+    private func recomputeStorageCapacity() {
+        var capacity = PlayerProfile.baseStorageCapacity
+        for building in world.buildings.values {
+            for (position, module) in building.modules {
+                guard buildingReports[building.id]?.structural.status(at: position)?.isOnline == true,
+                      let bonus = module.definition?.storageCapacityBonus else { continue }
+                capacity.add(bonus)
+            }
+        }
+        world.player.storageCapacity = capacity
+    }
+
     private func recomputeReport(for buildingID: UUID) {
         guard let building = world.buildings[buildingID] else { return }
         let previouslyKnown = buildingReports[buildingID]?.synergy.discoveredDefinitionIDs
 
         let (updatedBuilding, collapsed) = ConstructionEngine.resolveCollapse(building: building)
         if !collapsed.isEmpty {
+            for position in collapsed {
+                if let module = building.modules[position] { releaseWorkers(assignedTo: module.id) }
+            }
             world.buildings[buildingID] = updatedBuilding
             HapticManager.shared.structuralCollapse()
             AudioManager.shared.play(.collapse)
@@ -660,6 +752,8 @@ final class GameSession {
             districtModifiers: districtModifiers, eventModifiers: eventModifiers
         )
         buildingReports[buildingID] = BuildingReport(structural: structural, synergy: synergy, production: production)
+
+        recomputeStorageCapacity()
 
         let newlyDiscovered = synergy.discoveredDefinitionIDs.subtracting(previouslyKnown ?? [])
         for id in newlyDiscovered where world.player.discoveredSynergyIDs.insert(id).inserted {

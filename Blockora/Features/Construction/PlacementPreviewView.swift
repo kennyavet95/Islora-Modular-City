@@ -19,8 +19,8 @@ struct PlacementPreviewView: View {
             } else {
                 HStack(spacing: 14) {
                     ForEach(ResourceType.allCases.filter { preview.productionDelta[$0] != nil }, id: \.self) { resource in
-                        let amount = preview.productionDelta[resource] ?? 0
-                        Label("\(amount > 0 ? "+" : "")\(Int(amount))/h", systemImage: resource.symbolName)
+                        let amount = (preview.productionDelta[resource] ?? 0) / 60
+                        Label("\(amount > 0 ? "+" : "")\(Int(amount))/min", systemImage: resource.symbolName)
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(amount >= 0 ? BlockoraPalette.safe : BlockoraPalette.danger)
                     }

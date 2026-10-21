@@ -16,3 +16,9 @@ backend/.wrangler/
 backend/dist/
 backend/*.log
 backend/.dev.vars
+
+# New-account signing credentials
+release/account.env
+*.p8
+*.p12
+*.mobileprovision

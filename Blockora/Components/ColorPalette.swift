@@ -15,7 +15,7 @@ enum BlockoraPalette {
     static let craneOrange = Color(red: 0.98, green: 0.58, blue: 0.16)
     static let coinGold = Color(red: 1.0, green: 0.79, blue: 0.15)
 
-    static let panelBackground = Color(red: 0.06, green: 0.16, blue: 0.34).opacity(0.82)
+    static let panelBackground = Color(red: 0.06, green: 0.16, blue: 0.34).opacity(0.94)
     static let panelBorder = Color.white.opacity(0.18)
 
     static let safe = Color(red: 0.24, green: 0.78, blue: 0.42)

@@ -1,0 +1,60 @@
+{
+  "display_name": "Islora",
+  "app_store_name": "Islora: Modular City",
+  "bundle_id": "com.isloragames.islora",
+  "test_bundle_id": "com.isloragames.islora.tests",
+  "sku": "ISLORA-IOS-001",
+  "version": "1.0",
+  "initial_build_number": "1",
+  "primary_locale": "nl-NL",
+  "additional_locales": [],
+  "game_language": "en",
+  "platform": "IOS",
+  "category": "GAMES",
+  "subcategory": "GAMES_SIMULATION",
+  "price": "FREE",
+  "excluded_territories_carried_forward": [
+    "RUS", "BLR", "USA", "CHN", "ARE", "SAU", "JOR", "OMN", "QAT",
+    "DZA", "PSE", "SYR", "TUN", "LBY", "YEM", "IRN", "BHR", "KWT",
+    "IRQ", "PRI"
+  ],
+  "release_type": "MANUAL",
+  "minimum_ios_version": "18.6",
+  "devices": [
+    "iPhone",
+    "iPad"
+  ],
+  "project": "Blockora.xcodeproj",
+  "scheme": "Islora",
+  "support_url": "https://isloramodularcity.online/support",
+  "marketing_url": "https://isloramodularcity.online",
+  "privacy_url": "https://isloramodularcity.online/privacy",
+  "bundle_registration_status": "pending_new_account",
+  "app_name_availability_status": "pending_app_store_connect",
+  "copyright_owner": "2026 Kenny Avet",
+  "review_contact": {
+    "first_name": "Kenny",
+    "last_name": "Avet",
+    "email": "kennyavet95@icloud.com",
+    "phone": "+13146480633"
+  },
+  "team_id": null,
+  "app_store_apple_id": null,
+  "website_deployment_status": "cloudflare_worker_deployed",
+  "screenshots_status": "20_progressed_gameplay_originals_ready",
+  "gameplay_release_status": "level_7_playthrough_verified_on_iphone_and_ipad",
+  "screenshots": {
+    "iPhone": {
+      "count": 10,
+      "width": 1320,
+      "height": 2868,
+      "display_size": "6.9-inch"
+    },
+    "iPad": {
+      "count": 10,
+      "width": 2064,
+      "height": 2752,
+      "display_size": "13-inch"
+    }
+  }
+}

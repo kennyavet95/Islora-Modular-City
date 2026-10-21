@@ -9,6 +9,11 @@ import Observation
 @MainActor
 @Observable
 final class ConstructionDragState {
+    enum CameraCommand: Equatable { case zoomIn, zoomOut, fit }
+    var cameraCommand: CameraCommand?
+    var zoomPercent = 100
+    var hudBottom: CGFloat = 0
+    var constructionToolsTop: CGFloat = 0
     var isDragging = false
     var draggingDefinitionID: String?
     /// Finger position in the SKView's own coordinate space (points, origin top-left).

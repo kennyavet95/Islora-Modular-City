@@ -57,6 +57,8 @@ private struct ModuleTrayCard: View {
     var body: some View {
         VStack(spacing: 6) {
             ModuleIconView(family: definition.family, size: 58)
+                .accessibilityIdentifier("module-\(definition.id)")
+                .accessibilityLabel(definition.displayName)
                 .highPriorityGesture(
                     DragGesture(minimumDistance: 4, coordinateSpace: .global)
                         .onChanged(onDragChanged)
@@ -68,7 +70,17 @@ private struct ModuleTrayCard: View {
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
-            Text("\(Int(definition.placementCost[.coins] ?? 0)) coins")
+            Text(definition.production.keys.sorted { $0.rawValue < $1.rawValue }.map { resource in
+                let rate = (definition.production[resource] ?? 0) / 60
+                return "\(rate > 0 ? "+" : "")\(Int(rate)) \(resource.displayName)/min"
+            }.joined(separator: " · "))
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.8))
+                .lineLimit(2)
+                .frame(minHeight: 22)
+            Text(definition.placementCost.keys.sorted { $0.rawValue < $1.rawValue }.map {
+                "\(Int(definition.placementCost[$0] ?? 0)) \($0.displayName)"
+            }.joined(separator: " + "))
                 .font(.caption2)
                 .foregroundStyle(canAfford ? .white.opacity(0.75) : BlockoraPalette.danger)
         }

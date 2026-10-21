@@ -1,6 +1,7 @@
 // Shared types for the BLOCKORA backend Worker.
 
 export interface Env {
+  ASSETS: Fetcher;
   DB: D1Database;
   CONFIG: KVNamespace;
   WORLD_PROJECT: DurableObjectNamespace;

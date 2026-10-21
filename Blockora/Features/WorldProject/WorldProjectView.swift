@@ -42,7 +42,7 @@ struct WorldProjectView: View {
                         }
                         .padding(.horizontal, 16)
 
-                        Text("Local progress for now — this will sync with every player's city once Blockora connects to its servers.")
+                        Text("Local progress for now — this will sync with every player's city once Islora connects to its servers.")
                             .font(.caption)
                             .foregroundStyle(.white.opacity(0.55))
                             .multilineTextAlignment(.center)
