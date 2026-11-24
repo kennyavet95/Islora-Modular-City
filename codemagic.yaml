@@ -26,6 +26,27 @@ workflows:
           : "${APP_STORE_CONNECT_ISSUER_ID:?Set the new account Issuer ID}"
           BUILD_NUMBER="${BUILD_NUMBER:-$((CM_BUILD_NUMBER + 1))}"
           agvtool new-version -all "$BUILD_NUMBER"
+      - name: Install push-enabled App Store provisioning profile
+        script: |
+          set -eux
+          # Codemagic's automatic signing installs a cached "isloracity" profile
+          # that predates the Push Notifications capability, so the archive fails
+          # with "doesn't include the aps-environment entitlement". The committed
+          # profile below is the current App Store Connect "isloracity"
+          # (aps-environment: production) and is bound to the same
+          # "Apple Distribution: KENNY AVET" certificate Codemagic installs, so
+          # the uploaded private key still matches. Replace the stale profile with
+          # it before Xcode resolves signing. (A .mobileprovision carries no
+          # private key; it ships inside every distributed IPA.)
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILES_DIR"
+          rm -f "$PROFILES_DIR"/*.mobileprovision || true
+          UUID=$(security cms -D -i release/signing/isloracity.mobileprovision \
+            | plutil -extract UUID raw -)
+          cp release/signing/isloracity.mobileprovision \
+            "$PROFILES_DIR/$UUID.mobileprovision"
+          security cms -D -i release/signing/isloracity.mobileprovision \
+            | plutil -extract Entitlements.aps-environment raw -
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
