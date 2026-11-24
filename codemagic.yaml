@@ -63,5 +63,9 @@ workflows:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
+        # App Store update only: just upload + let ASC process the build.
+        # External TestFlight beta review needs Beta App Review info (feedback
+        # email, tester contact) we don't use for a store update, and enabling
+        # it made the publish step fail (amber build). Keep both off.
+        submit_to_testflight: false
         submit_to_app_store: false
