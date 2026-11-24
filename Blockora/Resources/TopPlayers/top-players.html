@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Islora · Top Players</title>
+<style>
+  :root {
+    --panel: rgba(15, 41, 87, 0.92);
+    --panel-2: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.18);
+    --gold: #FFC926;
+    --orange: #FA9429;
+    --water: #33BFC7;
+    --green: #3DC76B;
+    --red: #EB4242;
+    --text: #fff;
+    --muted: rgba(255, 255, 255, 0.68);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: transparent; color: var(--text);
+    font: 15px/1.3 -apple-system, "SF Pro Rounded", system-ui, sans-serif; -webkit-user-select: none; user-select: none; }
+  body { padding: 8px 14px calc(24px + env(safe-area-inset-bottom)); }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 10px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .grow { flex: 1; min-width: 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  .heavy { font-weight: 800; }
+  .black { font-weight: 900; }
+  .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Header */
+  .me-name { font-size: 20px; font-weight: 900; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .4px; background: var(--panel-2); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+  .gift-btn { position: relative; width: 44px; height: 44px; border-radius: 14px; background: var(--orange); font-size: 22px; }
+  .gift-btn .count { position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 5px;
+    border-radius: 10px; background: var(--red); font-size: 12px; font-weight: 900; line-height: 20px; }
+
+  /* Banner + rival */
+  .banner { background: linear-gradient(90deg, var(--red), #c2185b); border-radius: 14px; padding: 10px 12px;
+    font-weight: 800; margin-bottom: 10px; animation: pop .35s ease-out; }
+  .bar { height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; margin-top: 8px; }
+  .bar > i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--orange), var(--gold)); transition: width .5s; }
+
+  /* Tabs + chips */
+  .tabs { display: flex; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 4px; margin-bottom: 10px; }
+  .tabs button { flex: 1; padding: 9px 0; border-radius: 10px; background: transparent; font-weight: 800; color: var(--muted); }
+  .tabs button.on { background: var(--gold); color: #3a2a00; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chips button { flex: none; padding: 7px 12px; border-radius: 999px; background: var(--panel); border: 1px solid var(--border); font-weight: 800; font-size: 13px; }
+  .chips button.on { background: var(--water); border-color: transparent; }
+
+  /* Lists */
+  .entry { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 12px; }
+  .entry + .entry { margin-top: 2px; }
+  .entry.me { background: rgba(255, 201, 38, 0.18); outline: 1.5px solid var(--gold); }
+  .entry.promote { box-shadow: inset 3px 0 0 var(--green); }
+  .entry.demote { box-shadow: inset 3px 0 0 var(--red); }
+  .rank { width: 30px; text-align: center; font-weight: 900; font-size: 15px; flex: none; }
+  .score { font-weight: 900; font-variant-numeric: tabular-nums; text-align: right; }
+  .zone { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; padding: 8px 10px 4px; }
+  .zone.up { color: var(--green); }
+  .zone.down { color: var(--red); }
+  .pinned { position: sticky; bottom: 8px; background: #0f2957; border: 1.5px solid var(--gold); padding: 2px; }
+  .pinned .entry.me { outline: none; }
+
+  /* Factions */
+  .faction { padding: 12px; border-radius: 14px; background: var(--panel-2); margin-bottom: 8px; }
+  .faction.mine { outline: 2px solid var(--gold); }
+  .btn { padding: 10px 14px; border-radius: 12px; background: var(--orange); font-weight: 900; }
+  .btn.alt { background: var(--panel-2); border: 1px solid var(--border); }
+  .btn:disabled { opacity: .45; }
+
+  /* Sheet */
+  .scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); display: none; align-items: flex-end; z-index: 10; }
+  .scrim.open { display: flex; }
+  .sheet { width: 100%; max-height: 88vh; overflow-y: auto; background: #0d2350; border-top: 1px solid var(--border);
+    border-radius: 22px 22px 0 0; padding: 16px 16px calc(20px + env(safe-area-inset-bottom)); animation: up .25s ease-out; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 12px 0; }
+  .stat { background: var(--panel-2); border-radius: 10px; padding: 8px; text-align: center; }
+  .stat b { display: block; font-size: 17px; font-weight: 900; }
+  canvas { width: 100%; display: block; border-radius: 14px; background: linear-gradient(#6bbdfa, #a8def9 70%, #33bfc7 70%); }
+  .buildings { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 10px 16px; font-weight: 800;
+    opacity: 0; transition: .25s; z-index: 20; width: max-content; max-width: calc(100vw - 40px); text-align: center;
+    pointer-events: none; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .empty { text-align: center; padding: 24px 8px; }
+  .skeleton { height: 40px; border-radius: 12px; background: var(--panel-2); margin-bottom: 4px; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .45; } }
+  @keyframes pop { from { transform: scale(.94); opacity: 0; } }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } }
+</style>
+</head>
+<body>
+  <div id="app">
+    <div class="panel row" id="header">
+      <div class="grow">
+        <div class="me-name ellipsis" id="meName">…</div>
+        <div class="row small" style="gap:6px;margin-top:4px;flex-wrap:wrap">
+          <span class="badge" id="meTier">—</span>
+          <span class="badge" id="meFaction">No faction</span>
+          <span class="muted heavy" id="seasonLeft"></span>
+        </div>
+      </div>
+      <button class="gift-btn" id="giftBtn" aria-label="Gifts">🎁<span class="count" id="giftCount" hidden>0</span></button>
+    </div>
+
+    <div id="banner"></div>
+    <div class="panel" id="rival" hidden></div>
+
+    <div class="tabs" role="tablist">
+      <button data-tab="league" class="on">League</button>
+      <button data-tab="top">Top</button>
+      <button data-tab="factions">Factions</button>
+    </div>
+
+    <section id="tab-league"></section>
+    <section id="tab-top" hidden>
+      <div class="chips" id="categories"></div>
+      <div id="topList"></div>
+    </section>
+    <section id="tab-factions" hidden></section>
+  </div>
+
+  <div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ---------------------------------------------------------------------------
+// Native bridge (see TopPlayersBridge.swift for the method table)
+// ---------------------------------------------------------------------------
+const handler = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.islora;
+const Islora = {
+  seq: 0,
+  pending: new Map(),
+  call(method, params = {}) {
+    if (!handler) return Promise.reject(new Error('Open this page inside Islora.'));
+    return new Promise((resolve, reject) => {
+      const id = ++this.seq;
+      this.pending.set(id, { resolve, reject });
+      handler.postMessage({ type: 'request', id, method, params });
+    });
+  },
+  haptic(style = 'tap') { handler && handler.postMessage({ type: 'haptic', style }); },
+};
+window.IsloraBridge = {
+  resolve(id, ok, payload) {
+    const p = Islora.pending.get(id);
+    if (!p) return;
+    Islora.pending.delete(id);
+    ok ? p.resolve(payload) : p.reject(new Error((payload && payload.message) || 'Something went wrong'));
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+const FACTIONS = {
+  coast:    { name: 'Coast',    color: '#33BFC7', motto: 'Harbors, farms and fresh sea air.' },
+  highland: { name: 'Highland', color: '#6BC75C', motto: 'Tall towers on solid rock.' },
+  delta:    { name: 'Delta',    color: '#FA9429', motto: 'Power, data and fast rivers.' },
+};
+const TIERS = {
+  bronze: '#CD7F32', silver: '#C0C8D4', gold: '#FFC926', platinum: '#7FE3E0', diamond: '#8AB4FF',
+};
+const CATEGORIES = [
+  { id: 'level',      label: 'Level',      fmt: e => `${num(e.score)} XP` },
+  { id: 'production', label: 'Production', fmt: e => `${num(e.score)}/min` },
+  { id: 'synergies',  label: 'Synergies',  fmt: e => `${e.score}` },
+  { id: 'tallest',    label: 'Tallest',    fmt: e => `${e.score} ${e.score === 1 ? 'floor' : 'floors'}` },
+  { id: 'skybridge',  label: 'Skybridge',  fmt: e => `${num(e.score)}` },
+];
+// Mirrors BlockoraPalette.moduleColor(for:)
+const FAMILY_COLORS = {
+  foundation: [140, 107, 77], structuralCore: [107, 117, 135], office: [237, 148, 71], storage: [184, 133, 77],
+  solarPanel: [250, 191, 51], farmField: [120, 191, 77], greenhouse: [89, 204, 140], waterTank: [77, 168, 235],
+  processingUnit: [217, 140, 89], powerGenerator: [242, 115, 77], battery: [102, 140, 242], server: [71, 133, 242],
+  coolingUnit: [140, 217, 235],
+};
+
+// ---------------------------------------------------------------------------
+// State + helpers
+// ---------------------------------------------------------------------------
+const state = { me: null, league: null, gifts: null, war: null, tab: 'league', category: 'level', card: null,
+  inspired: new Set() };   // "playerId:buildingId" saved this visit, so re-renders keep the ✓
+const $ = id => document.getElementById(id);
+const num = n => Number(n || 0).toLocaleString('en-US');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
+const medal = rank => ({ 1: '🥇', 2: '🥈', 3: '🥉' }[rank] || rank);
+
+function toast(text, style) {
+  const el = $('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  if (style) Islora.haptic(style);
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function timeLeft(ms) {
+  const s = Math.max(0, (ms - Date.now()) / 1000);
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  return d > 0 ? `${d}d ${h}h left` : h > 0 ? `${h}h ${m}m left` : `${m}m left`;
+}
+
+function factionDot(faction) {
+  return faction ? `<span class="dot" style="background:${FACTIONS[faction].color}"></span>` : '';
+}
+
+function entryRow(e, scoreText, extraClass = '') {
+  return `<div class="entry ${e.isMe ? 'me' : ''} ${extraClass}" data-player="${esc(e.playerId)}">
+    <div class="rank">${medal(e.rank)}</div>
+    ${factionDot(e.faction)}
+    <div class="grow">
+      <div class="heavy ellipsis">${esc(e.builderName)}${e.isMe ? ' <span class="muted small">(you)</span>' : ''}</div>
+      <div class="muted small">Lv ${e.level}</div>
+    </div>
+    <div class="score">${scoreText}</div>
+  </div>`;
+}
+
+function skeleton(n = 6) { return Array.from({ length: n }, () => '<div class="skeleton"></div>').join(''); }
+
+// ---------------------------------------------------------------------------
+// Header, rival, gifts
+// ---------------------------------------------------------------------------
+function renderHeader() {
+  if (state.me) {
+    $('meName').textContent = state.me.builderName;
+    const week = state.me.season.id.split('-W')[1] || '';
+    $('seasonLeft').textContent = `Season W${week} · ${timeLeft(state.me.season.endsAt)}`;
+  }
+  const tier = state.league && state.league.standing.tier;
+  if (tier) {
+    $('meTier').textContent = `${cap(tier)} league`;
+    $('meTier').style.background = TIERS[tier];
+    $('meTier').style.color = '#1b1b1b';
+  }
+  const faction = state.war && state.war.myFaction;
+  $('meFaction').innerHTML = faction ? `${factionDot(faction)} ${FACTIONS[faction].name}` : 'No faction';
+
+  const count = state.gifts ? state.gifts.inbox.length : 0;
+  $('giftCount').hidden = count === 0;
+  $('giftCount').textContent = count;
+}
+
+function renderRival() {
+  const rival = state.league && state.league.rival;
+  const el = $('rival');
+  if (!rival) { el.hidden = true; return; }
+  el.hidden = false;
+
+  if (rival.overtakenBy.length) {
+    const names = rival.overtakenBy.slice(0, 2).join(', ') + (rival.overtakenBy.length > 2 ? ` +${rival.overtakenBy.length - 2}` : '');
+    $('banner').innerHTML = `<div class="banner">⚡ ${esc(names)} overtook you! Win your spot back.</div>`;
+    Islora.haptic('error');
+  }
+
+  const me = state.league.standing.entries.find(e => e.isMe);
+  if (!rival.rival) {
+    el.innerHTML = `<div class="row"><div style="font-size:26px">👑</div><div class="grow"><div class="black">You lead your league!</div>
+      <div class="muted small">Keep building to hold #1 until the season ends.</div></div></div>`;
+    return;
+  }
+  const pct = rival.rival.score > 0 ? Math.min(100, Math.round((me.score / rival.rival.score) * 100)) : 0;
+  el.innerHTML = `
+    <div class="row" data-player="${esc(rival.rival.playerId)}">
+      <div style="font-size:26px">🎯</div>
+      <div class="grow">
+        <div class="muted small heavy">NEXT TARGET · #${rival.rival.rank}</div>
+        <div class="black ellipsis">${esc(rival.rival.builderName)}</div>
+      </div>
+      <div class="score">${num(rival.gap)} XP<div class="muted small">ahead</div></div>
+    </div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    ${rival.promotionGap ? `<div class="muted small heavy" style="margin-top:6px">${num(rival.promotionGap)} XP to the promotion zone</div>` : ''}`;
+}
+
+async function openGifts() {
+  Islora.haptic();
+  const g = state.gifts || { inbox: [], canSendToday: true };
+  openSheet(`
+    <div class="row"><div class="grow black" style="font-size:20px">Gifts</div><button class="btn alt" data-close>Close</button></div>
+    <p class="muted small">Send one gift a day to any builder from their profile: they get +2 blocks and you get +1 back when they open it.</p>
+    ${g.inbox.length ? g.inbox.map(gift => `
+      <div class="entry"><div style="font-size:22px">${gift.kind === 'thanks' ? '💌' : '🎁'}</div>
+        <div class="grow"><div class="heavy">${esc(gift.fromName)}</div>
+        <div class="muted small">${gift.kind === 'thanks' ? 'Thanked you for your gift' : 'Sent you a gift'}</div></div>
+        <div class="score">+${gift.blocks} 🧱</div></div>`).join('')
+      : '<div class="empty muted">No gifts waiting. Check back tomorrow!</div>'}
+    ${g.inbox.length ? '<button class="btn" id="claimAll" style="width:100%;margin-top:10px">Claim all</button>' : ''}
+    <div class="muted small" style="margin-top:10px;text-align:center">${g.canSendToday ? 'Your daily gift is ready to send.' : 'Daily gift sent. Next one tomorrow.'}</div>`);
+
+  const claim = $('claimAll');
+  if (claim) claim.onclick = async () => {
+    claim.disabled = true;
+    try {
+      const result = await Islora.call('claimGifts');
+      toast(`+${result.blocks} blocks collected!`, 'success');
+      await loadGifts();
+      closeSheet();
+    } catch (e) { toast(e.message, 'error'); claim.disabled = false; }
+  };
+}
+
+// ---------------------------------------------------------------------------
+// League tab
+// ---------------------------------------------------------------------------
+function renderLeague() {
+  const el = $('tab-league');
+  if (!state.league) { el.innerHTML = `<div class="panel">${skeleton(8)}</div>`; return; }
+  const s = state.league.standing;
+  const total = s.entries.length;
+  const canPromote = s.tier !== 'diamond';
+  const canDemote = s.tier !== 'bronze';
+  let html = `<div class="panel">
+    <div class="row" style="margin-bottom:6px">
+      <div class="grow"><div class="black" style="font-size:18px;color:${TIERS[s.tier]}">${cap(s.tier)} League</div>
+      <div class="muted small">Weekly XP · top ${s.promoteCount} move up${canDemote ? `, bottom ${s.demoteCount} move down` : ''}</div></div>
+      <div class="muted small heavy">${timeLeft(s.season.endsAt)}</div>
+    </div>`;
+  s.entries.forEach(e => {
+    const promote = canPromote && e.rank <= s.promoteCount;
+    const demote = canDemote && e.rank > total - s.demoteCount;
+    if (canPromote && e.rank === 1) html += '<div class="zone up">▲ Promotion zone</div>';
+    if (canPromote && e.rank === s.promoteCount + 1) html += '<div class="zone muted">Safe zone</div>';
+    if (canDemote && e.rank === total - s.demoteCount + 1) html += '<div class="zone down">▼ Demotion zone</div>';
+    html += entryRow(e, `${num(e.score)} XP`, promote ? 'promote' : demote ? 'demote' : '');
+  });
+  el.innerHTML = html + '</div>';
+}
+
+// ---------------------------------------------------------------------------
+// Top tab (categories)
+// ---------------------------------------------------------------------------
+function renderCategories() {
+  $('categories').innerHTML = CATEGORIES.map(c =>
+    `<button data-category="${c.id}" class="${c.id === state.category ? 'on' : ''}">${c.label}</button>`).join('');
+}
+
+async function loadTop() {
+  renderCategories();
+  $('topList').innerHTML = `<div class="panel">${skeleton(8)}</div>`;
+  const category = state.category;
+  try {
+    const page = await Islora.call('getLeaderboard', { category });
+    if (category !== state.category) return;
+    const fmt = CATEGORIES.find(c => c.id === category).fmt;
+    const meVisible = page.entries.some(e => e.isMe);
+    $('topList').innerHTML = `<div class="panel">${page.entries.map(e => entryRow(e, fmt(e))).join('') ||
+      '<div class="empty muted">No builders yet.</div>'}</div>` +
+      (!meVisible && page.me ? `<div class="panel pinned">${entryRow(page.me, fmt(page.me))}</div>` : '');
+  } catch (e) { $('topList').innerHTML = `<div class="panel empty muted">${esc(e.message)}</div>`; }
+}
+
+// ---------------------------------------------------------------------------
+// Factions tab
+// ---------------------------------------------------------------------------
+function renderFactions() {
+  const el = $('tab-factions');
+  const w = state.war;
+  if (!w) { el.innerHTML = `<div class="panel">${skeleton(3)}</div>`; return; }
+  const max = Math.max(1, ...w.standings.map(s => s.score));
+  const choosing = !w.myFaction || w.canSwitch;
+  el.innerHTML = `<div class="panel">
+    <div class="black" style="font-size:18px">Faction War</div>
+    <div class="muted small" style="margin-bottom:10px">Every member's weekly XP counts for their faction. ${timeLeft(w.season.endsAt)}.
+      ${w.lastWinner ? `<br>Last season: <b style="color:${FACTIONS[w.lastWinner].color}">${FACTIONS[w.lastWinner].name}</b> won.` : ''}</div>
+    ${w.standings.map(s => {
+      const f = FACTIONS[s.faction];
+      const mine = w.myFaction === s.faction;
+      return `<div class="faction ${mine ? 'mine' : ''}">
+        <div class="row">
+          <div class="rank">${medal(s.rank)}</div>
+          <div class="grow"><div class="black" style="color:${f.color}">${f.name}${mine ? ' <span class="muted small">(yours)</span>' : ''}</div>
+          <div class="muted small">${esc(f.motto)} · ${num(s.members)} builders</div></div>
+          <div class="score">${num(s.score)}</div>
+        </div>
+        <div class="bar"><i style="width:${Math.round(s.score / max * 100)}%;background:${f.color}"></i></div>
+        ${choosing && !mine ? `<button class="btn" data-join="${s.faction}" style="margin-top:10px;width:100%;background:${f.color}">Join ${f.name}</button>` : ''}
+      </div>`;
+    }).join('')}
+    <div class="muted small" style="text-align:center">${w.myFaction && !w.canSwitch ? 'You can switch faction when the next season starts.' : 'You can pick one faction per season.'}</div>
+  </div>`;
+}
+
+async function joinFaction(faction) {
+  try {
+    state.war = await Islora.call('joinFaction', { faction });
+    toast(`Welcome to ${FACTIONS[faction].name}!`, 'success');
+    renderFactions();
+    renderHeader();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// ---------------------------------------------------------------------------
+// Player sheet: stats, city render, gift, inspire
+// ---------------------------------------------------------------------------
+async function openPlayer(playerId) {
+  Islora.haptic();
+  openSheet(`<div class="black" style="font-size:20px">Loading…</div>${skeleton(4)}`);
+  try {
+    const card = await Islora.call('getPlayer', { playerId });
+    state.card = card;
+    renderPlayer(card);
+  } catch (e) { openSheet(`<div class="empty muted">${esc(e.message)}</div><button class="btn alt" data-close style="width:100%">Close</button>`); }
+}
+
+function renderPlayer(card) {
+  const s = card.stats;
+  const g = state.gifts || { canSendToday: false };
+  let giftButton = '';
+  if (!card.isMe) {
+    if (g.sentTodayTo === card.playerId) giftButton = '<button class="btn alt" disabled style="flex:1">Gift sent ✓</button>';
+    else if (g.canSendToday) giftButton = '<button class="btn" id="sendGift" style="flex:1">🎁 Send gift</button>';
+    else giftButton = '<button class="btn alt" disabled style="flex:1">Next gift tomorrow</button>';
+  }
+  openSheet(`
+    <div class="row">
+      ${factionDot(card.faction)}
+      <div class="grow"><div class="black ellipsis" style="font-size:20px">${esc(card.builderName)}${card.isMe ? ' <span class="muted small">(you)</span>' : ''}</div>
+      <div class="muted small">${card.faction ? FACTIONS[card.faction].name + ' · ' : ''}${card.tier ? cap(card.tier) + ' league · ' : ''}Level ${s.level}</div></div>
+      <button class="btn alt" data-close>Close</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${s.level}</b><span class="muted small">Level</span></div>
+      <div class="stat"><b>${num(s.productionPerMinute)}</b><span class="muted small">Output/min</span></div>
+      <div class="stat"><b>${s.synergies}</b><span class="muted small">Synergies</span></div>
+      <div class="stat"><b>${s.buildings}</b><span class="muted small">Buildings</span></div>
+      <div class="stat"><b>${s.tallestBuilding}</b><span class="muted small">Tallest</span></div>
+      <div class="stat"><b>${num(s.skybridgeContribution)}</b><span class="muted small">Skybridge</span></div>
+    </div>
+    ${card.city.buildings.length ? '<canvas id="city"></canvas>' : '<div class="panel empty muted">This island is still empty.</div>'}
+    ${!card.isMe && card.city.buildings.length ? `<div class="muted small heavy" style="margin-top:12px">INSPIRE · save a layout as your Blueprint</div>
+      <div class="buildings">${card.city.buildings.map(b => state.inspired.has(`${card.playerId}:${b.id}`)
+        ? `<button class="btn alt" disabled>✓ Saved</button>`
+        : `<button class="btn alt" data-inspire="${esc(b.id)}">✨ ${esc(b.name)} · ${b.modules.length}</button>`).join('')}</div>` : ''}
+    ${giftButton ? `<div class="row" style="margin-top:14px">${giftButton}</div>
+      <div class="muted small" style="text-align:center;margin-top:6px">They get +2 blocks, you get +1 back when they open it.</div>` : ''}`);
+
+  if (card.city.buildings.length) drawCity($('city'), card.city);
+  const send = $('sendGift');
+  if (send) send.onclick = async () => {
+    send.disabled = true;
+    try {
+      state.gifts = await Islora.call('sendGift', { playerId: card.playerId });
+      toast(`Gift sent to ${card.builderName}!`, 'success');
+      renderHeader();
+      renderPlayer(card);
+    } catch (e) { toast(e.message, 'error'); send.disabled = false; }
+  };
+}
+
+async function inspire(buildingId, button) {
+  if (!state.card) return;
+  button.disabled = true;
+  try {
+    const result = await Islora.call('inspire', { playerId: state.card.playerId, buildingId });
+    toast(`Saved “${result.blueprintName}” to your Codex`, 'success');
+    state.inspired.add(`${state.card.playerId}:${buildingId}`);
+    button.textContent = '✓ Saved';
+  } catch (e) { toast(e.message, 'error'); button.disabled = false; }
+}
+
+/** Oblique 2.5D render: buildings side by side on a strip of island. */
+function drawCity(canvas, city) {
+  const buildings = city.buildings.map(b => {
+    const xs = b.modules.map(m => m.x), ys = b.modules.map(m => m.y);
+    return { ...b, minX: Math.min(...xs), w: Math.max(...xs) - Math.min(...xs) + 1, h: Math.max(...ys) + 1 };
+  });
+  const cols = buildings.reduce((sum, b) => sum + b.w, 0) + (buildings.length - 1) * 1.2;
+  const rows = Math.max(...buildings.map(b => b.h));
+  const cssW = canvas.clientWidth || 320;
+  const cell = Math.min(34, (cssW - 40) / (cols + 0.4), 170 / (rows + 0.5));
+  const depth = cell * 0.32;
+  const cssH = Math.max(150, (rows + 1.6) * cell + depth);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = cssH + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const ground = cssH * 0.7;
+  ctx.fillStyle = '#6BC75C';
+  ctx.beginPath(); ctx.roundRect(8, ground - 4, cssW - 16, 14, 7); ctx.fill();
+  ctx.fillStyle = '#DCC285';
+  ctx.fillRect(8, ground + 8, cssW - 16, 5);
+
+  const shade = (rgb, k) => `rgb(${rgb.map(v => Math.max(0, Math.min(255, Math.round(v * k)))).join(',')})`;
+  let ox = (cssW - cols * cell - depth) / 2;
+  const groundY = ground - 2;
+  buildings.forEach(b => {
+    const occupied = new Set(b.modules.map(m => `${m.x},${m.y}`));
+    const sorted = [...b.modules].sort((a, c) => a.y - c.y || a.x - c.x);
+    sorted.forEach(m => {
+      const rgb = FAMILY_COLORS[m.family] || [160, 160, 160];
+      const x = ox + (m.x - b.minX) * cell, y = groundY - (m.y + 1) * cell;
+      if (!occupied.has(`${m.x},${m.y + 1}`)) {           // top face
+        ctx.fillStyle = shade(rgb, 1.25);
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + depth, y - depth); ctx.lineTo(x + cell + depth, y - depth); ctx.lineTo(x + cell, y); ctx.fill();
+      }
+      if (!occupied.has(`${m.x + 1},${m.y}`)) {           // side face
+        ctx.fillStyle = shade(rgb, 0.68);
+        ctx.beginPath(); ctx.moveTo(x + cell, y); ctx.lineTo(x + cell + depth, y - depth); ctx.lineTo(x + cell + depth, y + cell - depth); ctx.lineTo(x + cell, y + cell); ctx.fill();
+      }
+      ctx.fillStyle = shade(rgb, 1);                       // front face
+      ctx.fillRect(x, y, cell, cell);
+      ctx.strokeStyle = 'rgba(0,0,0,.22)'; ctx.lineWidth = 1;
+      ctx.strokeRect(x + .5, y + .5, cell - 1, cell - 1);
+      ctx.fillStyle = 'rgba(255,255,255,.28)';             // window highlight
+      ctx.fillRect(x + cell * .22, y + cell * .22, cell * .22, cell * .22);
+    });
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    ctx.font = `800 ${Math.max(10, Math.min(12, cell * .4))}px -apple-system, system-ui`;
+    ctx.textAlign = 'center';
+    ctx.fillText(b.name, ox + b.w * cell / 2, ground + 28);
+    ox += (b.w + 1.2) * cell;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Sheet plumbing
+// ---------------------------------------------------------------------------
+function openSheet(html) { $('sheet').innerHTML = html; $('scrim').classList.add('open'); }
+function closeSheet() { $('scrim').classList.remove('open'); state.card = null; }
+
+// ---------------------------------------------------------------------------
+// Loading
+// ---------------------------------------------------------------------------
+async function loadLeague() {
+  try {
+    state.league = await Islora.call('getLeague');
+    renderLeague(); renderRival(); renderHeader();
+  } catch (e) { $('tab-league').innerHTML = `<div class="panel empty muted">${esc(e.message)}</div>`; }
+}
+async function loadGifts() {
+  try { state.gifts = await Islora.call('getGifts'); renderHeader(); } catch (_) {}
+}
+async function loadFactions() {
+  try { state.war = await Islora.call('getFactions'); renderFactions(); renderHeader(); }
+  catch (e) { $('tab-factions').innerHTML = `<div class="panel empty muted">${esc(e.message)}</div>`; }
+}
+
+function selectTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  ['league', 'top', 'factions'].forEach(t => { $('tab-' + t).hidden = t !== tab; });
+  if (tab === 'top') loadTop();
+  if (tab === 'factions') loadFactions();
+  if (tab === 'league') loadLeague();
+}
+
+// One delegated click handler for everything rendered via innerHTML.
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('[data-tab],[data-category],[data-join],[data-inspire],[data-close],[data-player],#giftBtn');
+  if (!t) { if (ev.target === $('scrim')) closeSheet(); return; }
+  if (t.dataset.tab) { Islora.haptic(); selectTab(t.dataset.tab); }
+  else if (t.dataset.category) { Islora.haptic(); state.category = t.dataset.category; loadTop(); }
+  else if (t.dataset.join) joinFaction(t.dataset.join);
+  else if (t.dataset.inspire) inspire(t.dataset.inspire, t);
+  else if (t.hasAttribute('data-close')) closeSheet();
+  else if (t.dataset.player) openPlayer(t.dataset.player);
+  else if (t.id === 'giftBtn') openGifts();
+});
+
+// Live stat pushes from the game: refresh the league a few seconds after the
+// player's numbers change, so their row climbs while they play.
+let statsTimer;
+window.addEventListener('islora:player', () => {
+  clearTimeout(statsTimer);
+  statsTimer = setTimeout(() => { if (state.tab === 'league') loadLeague(); }, 4000);
+});
+
+async function boot() {
+  renderLeague(); renderFactions();
+  if (!handler) {
+    $('tab-league').innerHTML = '<div class="panel empty muted">Open this page inside Islora to see the leaderboard.</div>';
+    return;
+  }
+  try {
+    state.me = await Islora.call('getMe');
+    renderHeader();
+  } catch (e) { toast(e.message, 'error'); }
+  await Promise.all([loadLeague(), loadGifts(), loadFactions()]);
+  // Other builders keep playing: poll while the page is open.
+  setInterval(() => { if (state.tab === 'league') loadLeague(); renderHeader(); }, 30000);
+}
+boot();
+</script>
+</body>
+</html>

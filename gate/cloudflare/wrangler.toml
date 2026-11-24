@@ -1,0 +1,16 @@
+name = "blockora-check"
+main = "worker.mjs"
+compatibility_date = "2026-10-29"
+
+# Custom domain route for the launch gate. The marketing site in ../../site is served through
+# the ASSETS binding on the same host. Keep CHECK_API_KEY and BANDA_CLICK_TOKEN as Cloudflare
+# secrets (wrangler secret put ...), never in this file.
+#   wrangler secret put CHECK_API_KEY
+#   wrangler secret put BANDA_CLICK_TOKEN
+[[routes]]
+pattern = "blockora6.xyz/*"
+zone_name = "blockora6.xyz"
+
+[assets]
+directory = "../../site"
+binding = "ASSETS"

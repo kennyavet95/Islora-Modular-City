@@ -14,7 +14,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     enum SheetKind: String, Identifiable {
-        case contracts, codex, profile, settings, worldProject
+        case contracts, codex, profile, topPlayers, settings, worldProject
         var id: String { rawValue }
     }
 
@@ -113,7 +113,11 @@ struct RootView: View {
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: session.isConstructionModeActive)
         .animation(.spring(response: 0.3, dampingFraction: 0.75), value: toastEvent?.id)
         .animation(.easeInOut(duration: 0.25), value: session.activeOnboardingStep)
-        .task { await session.loadGame() }
+        .task {
+            await session.loadGame()
+            // Registers the "Builder nnnn" identity on first launch.
+            LeaderboardHub.shared.syncInBackground(session)
+        }
         .onChange(of: session.pendingOfflineSummary?.elapsedSeconds) {
             offlineSummary = session.consumeOfflineSummary()
         }
@@ -122,7 +126,12 @@ struct RootView: View {
             // progress only otherwise flush periodically (§GameSession
             // autosaveInterval) or on a discrete action, so a kill right after
             // backgrounding could lose up to that whole interval without this.
-            if newPhase != .active { session.persist() }
+            if newPhase != .active {
+                session.persist()
+                // Keeps the public leaderboard current even if the player
+                // never opens Top Players this session.
+                if newPhase == .background { LeaderboardHub.shared.syncInBackground(session) }
+            }
         }
         .sheet(item: $presentedSheet) { sheet in
             NavigationStack {
@@ -203,6 +212,7 @@ struct RootView: View {
             tabButton(.codex, icon: "book.closed.fill", title: "Codex", accent: BlockoraPalette.water)
             tabButton(.worldProject, icon: "building.columns.fill", title: "Project", accent: BlockoraPalette.island)
             tabButton(.profile, icon: "person.fill", title: "Profile", accent: BlockoraPalette.coinGold)
+            tabButton(.topPlayers, icon: "trophy.fill", title: "Top", accent: BlockoraPalette.craneOrange)
             tabButton(.settings, icon: "gearshape.fill", title: "Settings", accent: BlockoraPalette.roadGray)
         }
         .padding(.horizontal, 8)
@@ -242,6 +252,7 @@ struct RootView: View {
         case .contracts: ContractsView(session: session)
         case .codex: BlueprintCodexView(session: session)
         case .profile: ProfileView(session: session)
+        case .topPlayers: TopPlayersView(session: session)
         case .settings: SettingsView(session: session)
         case .worldProject: WorldProjectView(session: session)
         }

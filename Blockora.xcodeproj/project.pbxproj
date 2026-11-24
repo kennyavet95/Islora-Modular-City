@@ -3,8 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 110;
 	objects = {
+
+/* Begin PBXBuildFile section */
+		AD150000000000000000A003 /* AdjustSdk in Frameworks */ = {isa = PBXBuildFile; productRef = AD150000000000000000A002 /* AdjustSdk */; };
+		FB150000000000000000A003 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = FB150000000000000000A002 /* FirebaseMessaging */; };
+/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		517ED3053BEC41A1830ACED3 /* PBXContainerItemProxy */ = {
@@ -17,27 +22,31 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D7AFC97C305BB9BB005C5E4C /* Blockora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blockora.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C695CFBC8AE4EC7AF37CDB7 /* IsloraScreenshots.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = IsloraScreenshots.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6E1ADBDCC5694ACAB2282C66 /* BlockoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BlockoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4C695CFBC8AE4EC7AF37CDB7 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = IsloraScreenshots.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7AFC97C305BB9BB005C5E4C /* Blockora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blockora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		D7AFC97E305BB9BB005C5E4C /* Blockora */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Blockora;
-			sourceTree = "<group>";
-		};
 		B133AE678FA142E88E107C04 /* BlockoraTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = BlockoraTests;
 			sourceTree = "<group>";
 		};
-		BD8134F8269B4081B2390354 = {isa = PBXFileSystemSynchronizedRootGroup; path = IsloraScreenshots; sourceTree = "<group>"; };
+		BD8134F8269B4081B2390354 /* IsloraScreenshots */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = IsloraScreenshots;
+			sourceTree = "<group>";
+		};
+		D7AFC97E305BB9BB005C5E4C /* Blockora */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Blockora;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D7AFC979305BB9BB005C5E4C /* Frameworks */ = {
+		5CBA24BBCA5F485A9095B1FC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -47,7 +56,13 @@
 			files = (
 			);
 		};
-		5CBA24BBCA5F485A9095B1FC = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		D7AFC979305BB9BB005C5E4C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				AD150000000000000000A003 /* AdjustSdk in Frameworks */,
+				FB150000000000000000A003 /* FirebaseMessaging in Frameworks */,
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -66,7 +81,7 @@
 			children = (
 				D7AFC97C305BB9BB005C5E4C /* Blockora.app */,
 				6E1ADBDCC5694ACAB2282C66 /* BlockoraTests.xctest */,
-                4C695CFBC8AE4EC7AF37CDB7,
+				4C695CFBC8AE4EC7AF37CDB7 /* IsloraScreenshots.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -74,23 +89,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D7AFC97B305BB9BB005C5E4C /* Blockora */ = {
+		65D6326CF71B47D2B9F8BDCF /* IsloraScreenshots */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D7AFC989305BB9BC005C5E4C /* Build configuration list for PBXNativeTarget "Blockora" */;
+			buildConfigurationList = A4154C6356E94F9C83074656 /* Build configuration list for PBXNativeTarget "IsloraScreenshots" */;
 			buildPhases = (
-				D7AFC978305BB9BB005C5E4C /* Sources */,
-				D7AFC979305BB9BB005C5E4C /* Frameworks */,
-				D7AFC97A305BB9BB005C5E4C /* Resources */,
+				DA4A50C2CEFE43169D1DD3B3 /* Sources */,
+				5CBA24BBCA5F485A9095B1FC /* Frameworks */,
+				9CE0B4CB1FDD4D7AA9A98389 /* Resources */,
 			);
 			buildRules = (
 			);
-			fileSystemSynchronizedGroups = (
-				D7AFC97E305BB9BB005C5E4C /* Blockora */,
+			dependencies = (
+				EC24E46A4B3C4107B9C1E67C /* PBXTargetDependency */,
 			);
-			name = Blockora;
-			productName = Blockora;
-			productReference = D7AFC97C305BB9BB005C5E4C /* Blockora.app */;
-			productType = "com.apple.product-type.application";
+			fileSystemSynchronizedGroups = (
+				BD8134F8269B4081B2390354 /* IsloraScreenshots */,
+			);
+			name = IsloraScreenshots;
+			productName = IsloraScreenshots;
+			productReference = 4C695CFBC8AE4EC7AF37CDB7 /* IsloraScreenshots.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		8FB1EDFED5F54F7A841F41C4 /* BlockoraTests */ = {
 			isa = PBXNativeTarget;
@@ -113,18 +131,28 @@
 			productReference = 6E1ADBDCC5694ACAB2282C66 /* BlockoraTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-        65D6326CF71B47D2B9F8BDCF = {
-            isa = PBXNativeTarget;
-            buildConfigurationList = A4154C6356E94F9C83074656;
-            buildPhases = (DA4A50C2CEFE43169D1DD3B3, 5CBA24BBCA5F485A9095B1FC, 9CE0B4CB1FDD4D7AA9A98389);
-            buildRules = ();
-            dependencies = (EC24E46A4B3C4107B9C1E67C);
-            fileSystemSynchronizedGroups = (BD8134F8269B4081B2390354);
-            name = IsloraScreenshots;
-            productName = IsloraScreenshots;
-            productReference = 4C695CFBC8AE4EC7AF37CDB7;
-            productType = "com.apple.product-type.bundle.ui-testing";
-        };
+		D7AFC97B305BB9BB005C5E4C /* Blockora */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7AFC989305BB9BC005C5E4C /* Build configuration list for PBXNativeTarget "Blockora" */;
+			buildPhases = (
+				D7AFC978305BB9BB005C5E4C /* Sources */,
+				D7AFC979305BB9BB005C5E4C /* Frameworks */,
+				D7AFC97A305BB9BB005C5E4C /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				D7AFC97E305BB9BB005C5E4C /* Blockora */,
+			);
+			name = Blockora;
+			packageProductDependencies = (
+				AD150000000000000000A002 /* AdjustSdk */,
+				FB150000000000000000A002 /* FirebaseMessaging */,
+			);
+			productName = Blockora;
+			productReference = D7AFC97C305BB9BB005C5E4C /* Blockora.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -135,12 +163,12 @@
 				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
-					D7AFC97B305BB9BB005C5E4C = {
-						CreatedOnToolsVersion = 27.0;
-					};
 					8FB1EDFED5F54F7A841F41C4 = {
 						CreatedOnToolsVersion = 27.0;
 						TestTargetID = D7AFC97B305BB9BB005C5E4C;
+					};
+					D7AFC97B305BB9BB005C5E4C = {
+						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
@@ -153,6 +181,10 @@
 			);
 			mainGroup = D7AFC973305BB9BB005C5E4C;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AD150000000000000000A001 /* XCRemoteSwiftPackageReference "ios_sdk" */,
+				FB150000000000000000A001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D7AFC97D305BB9BB005C5E4C /* Products */;
 			projectDirPath = "";
@@ -160,37 +192,45 @@
 			targets = (
 				D7AFC97B305BB9BB005C5E4C /* Blockora */,
 				8FB1EDFED5F54F7A841F41C4 /* BlockoraTests */,
-                65D6326CF71B47D2B9F8BDCF,
+				65D6326CF71B47D2B9F8BDCF /* IsloraScreenshots */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D7AFC97A305BB9BB005C5E4C /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			files = (
-			);
-		};
 		8F5159DB359B4F5B9FE9EBC3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
 		};
-		9CE0B4CB1FDD4D7AA9A98389 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXSourcesBuildPhase section */
-		D7AFC978305BB9BB005C5E4C /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
+		9CE0B4CB1FDD4D7AA9A98389 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
 			files = (
 			);
 		};
+		D7AFC97A305BB9BB005C5E4C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
 		C32714E7303248D5A08625E9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
 			);
 		};
-		DA4A50C2CEFE43169D1DD3B3 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		D7AFC978305BB9BB005C5E4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		DA4A50C2CEFE43169D1DD3B3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -202,6 +242,66 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		159DE138A53E4C17AC978020 /* Release configuration for PBXNativeTarget "BlockoraTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blockora.app/Blockora";
+			};
+			name = Release;
+		};
+		2016416A4BC743E0871BB283 /* Debug configuration for PBXNativeTarget "BlockoraTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blockora.app/Blockora";
+			};
+			name = Debug;
+		};
+		66055694A6A646ABAB63D66C /* Debug configuration for PBXNativeTarget "IsloraScreenshots" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.screenshots;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Blockora;
+			};
+			name = Debug;
+		};
+		BFAE8601728543CB9645EF52 /* Release configuration for PBXNativeTarget "IsloraScreenshots" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.screenshots;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Blockora;
+			};
+			name = Release;
+		};
 		D7AFC987305BB9BC005C5E4C /* Debug configuration for PBXProject "Blockora" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -326,6 +426,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Blockora/Blockora.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -333,16 +434,18 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Islora;
 				INFOPLIST_KEY_CFBundleName = Islora;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera when web content you open asks to take a photo or video.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone when web content you open asks to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -360,6 +463,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Blockora/Blockora.Release.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -367,16 +471,18 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Islora;
 				INFOPLIST_KEY_CFBundleName = Islora;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera when web content you open asks to take a photo or video.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone when web content you open asks to record audio.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -389,69 +495,25 @@
 			};
 			name = Release;
 		};
-		2016416A4BC743E0871BB283 /* Debug configuration for PBXNativeTarget "BlockoraTests" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blockora.app/Blockora";
-			};
-			name = Debug;
-		};
-		159DE138A53E4C17AC978020 /* Release configuration for PBXNativeTarget "BlockoraTests" */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Blockora.app/Blockora";
-			};
-			name = Release;
-		};
-        66055694A6A646ABAB63D66C = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                CODE_SIGN_STYLE = Automatic;
-                GENERATE_INFOPLIST_FILE = YES;
-                PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.screenshots;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-                TEST_TARGET_NAME = Blockora;
-            };
-            name = Debug;
-        };
-        BFAE8601728543CB9645EF52 = {
-            isa = XCBuildConfiguration;
-            buildSettings = {
-                CODE_SIGN_STYLE = Automatic;
-                GENERATE_INFOPLIST_FILE = YES;
-                PRODUCT_BUNDLE_IDENTIFIER = com.isloragames.islora.screenshots;
-                PRODUCT_NAME = "$(TARGET_NAME)";
-                SWIFT_VERSION = 5.0;
-                TARGETED_DEVICE_FAMILY = "1,2";
-                TEST_TARGET_NAME = Blockora;
-            };
-            name = Release;
-        };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8BFCA0FC0E144BEF97556E23 /* Build configuration list for PBXNativeTarget "BlockoraTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2016416A4BC743E0871BB283 /* Debug configuration for PBXNativeTarget "BlockoraTests" */,
+				159DE138A53E4C17AC978020 /* Release configuration for PBXNativeTarget "BlockoraTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		A4154C6356E94F9C83074656 /* Build configuration list for PBXNativeTarget "IsloraScreenshots" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				66055694A6A646ABAB63D66C /* Debug configuration for PBXNativeTarget "IsloraScreenshots" */,
+				BFAE8601728543CB9645EF52 /* Release configuration for PBXNativeTarget "IsloraScreenshots" */,
+			);
+			defaultConfigurationName = Release;
+		};
 		D7AFC977305BB9BB005C5E4C /* Build configuration list for PBXProject "Blockora" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -468,16 +530,39 @@
 			);
 			defaultConfigurationName = Release;
 		};
-		8BFCA0FC0E144BEF97556E23 /* Build configuration list for PBXNativeTarget "BlockoraTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2016416A4BC743E0871BB283 /* Debug configuration for PBXNativeTarget "BlockoraTests" */,
-				159DE138A53E4C17AC978020 /* Release configuration for PBXNativeTarget "BlockoraTests" */,
-			);
-			defaultConfigurationName = Release;
-		};
-        A4154C6356E94F9C83074656 = {isa = XCConfigurationList; buildConfigurations = (66055694A6A646ABAB63D66C, BFAE8601728543CB9645EF52); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AD150000000000000000A001 /* XCRemoteSwiftPackageReference "ios_sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/adjust/ios_sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+		FB150000000000000000A001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AD150000000000000000A002 /* AdjustSdk */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AD150000000000000000A001 /* XCRemoteSwiftPackageReference "ios_sdk" */;
+			productName = AdjustSdk;
+		};
+		FB150000000000000000A002 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB150000000000000000A001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D7AFC974305BB9BB005C5E4C /* Project object */;
 	validationLevel = 1;

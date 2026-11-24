@@ -1,6 +1,5 @@
 workflows:
   ios-release:
-    name: Islora iOS Release
     name: Islora — App Store upload
     max_build_duration: 60
     instance_type: mac_mini_m2

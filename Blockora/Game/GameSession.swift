@@ -521,29 +521,84 @@ final class GameSession {
     @discardableResult
     func saveBlueprint(for buildingID: UUID, name: String) -> Bool {
         guard let building = world.buildings[buildingID], !building.modules.isEmpty else { return false }
-        let structural = StructuralEngine.evaluate(modules: building.modules)
-        let synergy = SynergyEngine.evaluate(modules: building.modules, playerLevel: world.player.level)
-        let production = ProductionEngine.evaluate(building: building, structural: structural, synergy: synergy)
-        let operationalRatios = production.operationalRatio.values
-        let efficiency = operationalRatios.isEmpty ? 100.0 : (operationalRatios.reduce(0, +) / Double(operationalRatios.count)) * 100
-
         let blueprint = Blueprint(
             id: UUID(),
             name: name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? building.displayName : name,
             buildingClass: building.buildingClass,
             moduleDefinitionIDs: building.modules.mapValues(\.definitionID),
             createdAt: Date(),
-            summary: BlueprintSummary(
-                efficiencyPercent: efficiency,
-                netProduction: production.netPerHour,
-                stabilityPercent: structural.overallHealthPercent * 100,
-                synergyCount: synergy.occurrences.count
-            )
+            summary: blueprintSummary(for: building)
         )
         world.blueprints.append(blueprint)
         HapticManager.shared.contractCompleted()
         persist()
         return true
+    }
+
+    /// Turns another player's building (from the Top Players page) into a
+    /// Blueprint. Like any Blueprint it's only a layout — building it still
+    /// costs real resources and respects level gating. Unknown module ids
+    /// (e.g. from a newer app version) are dropped.
+    @discardableResult
+    func importInspiredBlueprint(_ source: CityBuilding, author: String) -> Blueprint? {
+        guard let buildingClass = BuildingClass(rawValue: source.buildingClass) else { return nil }
+        var modules: [GridPosition: ModuleInstance] = [:]
+        for module in source.modules where ModuleCatalog.definition(for: module.definitionId) != nil {
+            let position = GridPosition(x: module.x, y: module.y)
+            modules[position] = ModuleInstance(definitionID: module.definitionId, position: position, constructionProgress: 1)
+        }
+        guard !modules.isEmpty else { return nil }
+
+        let building = BuildingInstance(buildingClass: buildingClass, plotID: UUID(), displayName: source.name, modules: modules)
+        let blueprint = Blueprint(
+            id: UUID(),
+            name: "\(author)'s \(buildingClass.displayName)",
+            buildingClass: buildingClass,
+            moduleDefinitionIDs: modules.mapValues(\.definitionID),
+            createdAt: Date(),
+            summary: blueprintSummary(for: building)
+        )
+        world.blueprints.append(blueprint)
+        HapticManager.shared.contractCompleted()
+        persist()
+        return blueprint
+    }
+
+    private func blueprintSummary(for building: BuildingInstance) -> BlueprintSummary {
+        let structural = StructuralEngine.evaluate(modules: building.modules)
+        let synergy = SynergyEngine.evaluate(modules: building.modules, playerLevel: world.player.level)
+        let production = ProductionEngine.evaluate(building: building, structural: structural, synergy: synergy)
+        let operationalRatios = production.operationalRatio.values
+        let efficiency = operationalRatios.isEmpty ? 100.0 : (operationalRatios.reduce(0, +) / Double(operationalRatios.count)) * 100
+        return BlueprintSummary(
+            efficiencyPercent: efficiency,
+            netProduction: production.netPerHour,
+            stabilityPercent: structural.overallHealthPercent * 100,
+            synergyCount: synergy.occurrences.count
+        )
+    }
+
+    // MARK: - Leaderboard
+
+    /// Mirrors the public "Builder nnnn" name into the profile.
+    func applyBuilderName(_ name: String) {
+        guard world.player.displayName != name else { return }
+        world.player.displayName = name
+        persist()
+    }
+
+    /// Credits leaderboard gifts. Respects storage caps like every other grant.
+    func grantLeaderboardReward(_ reward: ResourceBag) {
+        guard !reward.isEmpty else { return }
+        for (resource, amount) in reward {
+            let cap = world.player.storageCapacity[resource]
+            var updated = world.player.resources[resource, default: 0] + amount
+            if let cap { updated = min(updated, cap) }
+            world.player.resources[resource] = updated
+        }
+        HapticManager.shared.contractCompleted()
+        AudioManager.shared.play(.resourceCollect)
+        persist()
     }
 
     /// Replays a saved Blueprint's layout onto an empty building of the same
